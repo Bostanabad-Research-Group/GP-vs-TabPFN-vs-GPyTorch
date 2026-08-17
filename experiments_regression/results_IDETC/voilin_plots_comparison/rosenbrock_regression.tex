@@ -1,0 +1,20 @@
+\begin{figure*}[hptb]
+    \centering
+    \captionsetup{font=footnotesize}
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison/rosenbrock_xdim80_gpplus_comparison_RRMSE.pdf}
+        \subcaption{RRMSE}
+        \label{fig rrmse rosenbrock}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison/rosenbrock_xdim80_gpplus_comparison_NIS.pdf}
+        \subcaption{NIS}
+        \label{fig nis rosenbrock}
+    \end{minipage}
+    \caption{Evaluations based on RRMSE and NIS (Rosenbrock $D_x=80$): Noise is either $\varepsilon \sim \mathcal{N}(0, (0.002\times c)^2)$ or $\varepsilon \sim \mathcal{N}(0, (0.08\times c)^2)$. GPs are used on CPU while TabPFN is used on GPU. All the GPs are trained with the \textit{default} settings of GP+ and GPyTorch packages. GP+ (PE) denotes the case where the default Gaussian kernel is switched to the PE kernel.}
+
+    \label{fig results rosenbrock}
+\end{figure*}

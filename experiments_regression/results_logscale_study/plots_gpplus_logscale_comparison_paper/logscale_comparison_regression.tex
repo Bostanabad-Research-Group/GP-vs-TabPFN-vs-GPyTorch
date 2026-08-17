@@ -1,0 +1,19 @@
+\begin{figure*}[hptb]
+    \centering
+    \captionsetup{font=footnotesize}
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_logscale_comparison_paper/buckling_xdim4_gpplus_comparison_RRMSE.pdf}
+        \subcaption{RRMSE}
+        \label{fig logscale buckling rrmse}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_logscale_comparison_paper/buckling_xdim4_gpplus_comparison_NIS.pdf}
+        \subcaption{NIS}
+        \label{fig logscale buckling nis}
+    \end{minipage}
+    \caption{Evaluations based on RRMSE and NIS (Buckling $D_x=4$) with and without log-scale target preprocessing: Noise is either $\varepsilon \sim \mathcal{N}(0, (0.002\times c)^2)$ or $\varepsilon \sim \mathcal{N}(0, (0.08\times c)^2)$. GPs are used on CPU while TabPFN is used on GPU. All the GPs are trained with the \textit{default} settings of GP+ and GPyTorch packages. GP+ (log) and GPyTorch (log) denote models trained after a log transform of the response, with metrics evaluated on the original scale.}
+    \label{fig logscale buckling}
+\end{figure*}

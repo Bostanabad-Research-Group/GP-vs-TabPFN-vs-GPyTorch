@@ -1,0 +1,373 @@
+{
+  "gp_data": {
+    "summary": {
+      "Total_Time": {
+        "mean": 8.224416238983395,
+        "std": 1.8598902761687215,
+        "median": 8.224416238983395,
+        "min": 6.909275212441571,
+        "max": 9.539557265525218,
+        "count": 2
+      },
+      "Full_Train_Time": {
+        "mean": 8.191931349952938,
+        "std": 1.86885288779826,
+        "median": 8.191931349952938,
+        "min": 6.870452799950726,
+        "max": 9.51340989995515,
+        "count": 2
+      },
+      "Train_Time": {
+        "mean": 6.829797599930316,
+        "std": 1.8823847194938175,
+        "median": 6.829797599930316,
+        "min": 5.498750599974301,
+        "max": 8.160844599886332,
+        "count": 2
+      },
+      "Log_Time": {
+        "mean": 1.3621337500226218,
+        "std": 0.013531831695557538,
+        "median": 1.3621337500226218,
+        "min": 1.352565300068818,
+        "max": 1.3717021999764256,
+        "count": 2
+      },
+      "Prediction_Time": {
+        "mean": 0.03248488903045654,
+        "std": 0.008962611629538637,
+        "median": 0.03248488903045654,
+        "min": 0.02614736557006836,
+        "max": 0.03882241249084473,
+        "count": 2
+      },
+      "RRMSE": {
+        "mean": 0.005090788331169207,
+        "std": 1.4411358626678777e-05,
+        "median": 0.005090788331169207,
+        "min": 0.005080597961758171,
+        "max": 0.005100978700580243,
+        "count": 2
+      },
+      "RMSE": {
+        "mean": 0.24495591262078237,
+        "std": 0.0006934382800576585,
+        "median": 0.24495591262078237,
+        "min": 0.24446557771061928,
+        "max": 0.2454462475309455,
+        "count": 2
+      },
+      "MSE": {
+        "mean": 0.0600036395562045,
+        "std": 0.00033972361347542524,
+        "median": 0.0600036395562045,
+        "min": 0.05976341868538683,
+        "max": 0.06024386042702217,
+        "count": 2
+      },
+      "MAE": {
+        "mean": 0.1840363420861163,
+        "std": 0.0007339903038481092,
+        "median": 0.1840363420861163,
+        "min": 0.18351733256494013,
+        "max": 0.18455535160729247,
+        "count": 2
+      },
+      "NIS": {
+        "mean": 0.023485116936537438,
+        "std": 0.00019261097816584743,
+        "median": 0.023485116936537438,
+        "min": 0.023348920407745395,
+        "max": 0.023621313465329485,
+        "count": 2
+      },
+      "NIS_width": {
+        "mean": 0.016670213449372973,
+        "std": 0.00018510244351922856,
+        "median": 0.016670213449372973,
+        "min": 0.016539326256346326,
+        "max": 0.01680110064239962,
+        "count": 2
+      },
+      "NIS_outside": {
+        "mean": 0.006814903487164466,
+        "std": 7.50853464661887e-06,
+        "median": 0.006814903487164466,
+        "min": 0.006809594151399067,
+        "max": 0.006820212822929864,
+        "count": 2
+      },
+      "CRPS": {
+        "mean": 0.13053471129989824,
+        "std": 0.0001473358963985078,
+        "median": 0.13053471129989824,
+        "min": 0.13043052908844266,
+        "max": 0.13063889351135383,
+        "count": 2
+      },
+      "NCRPS": {
+        "mean": 0.0027128334155657532,
+        "std": 3.062003501458824e-06,
+        "median": 0.0027128334155657532,
+        "min": 0.0027106682521258548,
+        "max": 0.0027149985790056517,
+        "count": 2
+      },
+      "jitter": {
+        "mean": 1e-06,
+        "std": 0.0,
+        "median": 1e-06,
+        "min": 1e-06,
+        "max": 1e-06,
+        "count": 2
+      },
+      "raw_noise": {
+        "mean": -5.418722342132426,
+        "std": 0.001937584490269664,
+        "median": -5.418722342132426,
+        "min": -5.420092421264617,
+        "max": -5.417352263000234,
+        "count": 2
+      },
+      "noise": {
+        "mean": 0.001952717278969308,
+        "std": 4.355974728389034e-06,
+        "median": 0.001952717278969308,
+        "min": 0.001949637139700187,
+        "max": 0.001955797418238429,
+        "count": 2
+      },
+      "noise_std": {
+        "mean": 0.08690958416525846,
+        "std": 0.004742309653824669,
+        "median": 0.08690958416525846,
+        "min": 0.0835562648505526,
+        "max": 0.09026290347996431,
+        "count": 2
+      },
+      "outputscale": {
+        "mean": 3.999950885571417,
+        "std": 5.669203862351596e-05,
+        "median": 3.999950885571417,
+        "min": 3.9999107982464674,
+        "max": 3.9999909728963674,
+        "count": 2
+      },
+      "num_epochs": {
+        "mean": 1.0,
+        "std": 0.0,
+        "median": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "count": 2
+      },
+      "cont_lengthscale_0": {
+        "mean": -3.4155275491122623,
+        "std": 0.24387094087935818,
+        "median": -3.4155275491122623,
+        "min": -3.5879703451424,
+        "max": -3.2430847530821243,
+        "count": 2
+      },
+      "cont_lengthscale_1": {
+        "mean": -5.999996892776037,
+        "std": 4.394278269829306e-06,
+        "median": -5.999996892776037,
+        "min": -6.0,
+        "max": -5.999993785552074,
+        "count": 2
+      },
+      "cont_lengthscale_2": {
+        "mean": -2.8052137583693453,
+        "std": 0.11061239562076723,
+        "median": -2.8052137583693453,
+        "min": -2.883428533396079,
+        "max": -2.726998983342612,
+        "count": 2
+      },
+      "cont_lengthscale_3": {
+        "mean": -2.9505694954144848,
+        "std": 0.0007170652270718439,
+        "median": -2.9505694954144848,
+        "min": -2.9510765370991003,
+        "max": -2.950062453729869,
+        "count": 2
+      },
+      "cont_lengthscale_4": {
+        "mean": -4.955790406098512,
+        "std": 0.20661703172920945,
+        "median": -4.955790406098512,
+        "min": -5.101890710342872,
+        "max": -4.809690101854152,
+        "count": 2
+      },
+      "cont_lengthscale_5": {
+        "mean": -4.647112784709853,
+        "std": 0.054356870209809255,
+        "median": -4.647112784709853,
+        "min": -4.685548896239285,
+        "max": -4.608676673180419,
+        "count": 2
+      },
+      "cont_lengthscale_6": {
+        "mean": -1.9672410230891813,
+        "std": 0.07009990959875421,
+        "median": -1.9672410230891813,
+        "min": -2.0168091445270244,
+        "max": -1.9176729016513383,
+        "count": 2
+      },
+      "cont_lengthscale_7": {
+        "mean": -2.5643961404141264,
+        "std": 0.37933239582144457,
+        "median": -2.5643961404141264,
+        "min": -2.8326246498232095,
+        "max": -2.2961676310050434,
+        "count": 2
+      },
+      "cont_lengthscale_8": {
+        "mean": -3.026693163579102,
+        "std": 0.10397573007246948,
+        "median": -3.026693163579102,
+        "min": -3.1002151073921675,
+        "max": -2.953171219766037,
+        "count": 2
+      },
+      "cont_lengthscale_9": {
+        "mean": -5.919710148448591,
+        "std": 0.11354699698492572,
+        "median": -5.919710148448591,
+        "min": -6.0,
+        "max": -5.839420296897181,
+        "count": 2
+      },
+      "y_train_mean": {
+        "mean": 271.2616581118825,
+        "std": 0.9532797813373444,
+        "median": 271.2616581118825,
+        "min": 270.58758751413086,
+        "max": 271.9357287096342,
+        "count": 2
+      },
+      "y_train_std": {
+        "mean": 44.50981754786619,
+        "std": 2.527858665148813,
+        "median": 44.50981754786619,
+        "min": 42.72235154385829,
+        "max": 46.29728355187409,
+        "count": 2
+      }
+    },
+    "metrics": [
+      {
+        "Total_Time": 9.539557265525218,
+        "Full_Train_Time": 9.51340989995515,
+        "Train_Time": 8.160844599886332,
+        "Log_Time": 1.352565300068818,
+        "Prediction_Time": 0.02614736557006836,
+        "RRMSE": 0.005100978700580243,
+        "RMSE": 0.2454462475309455,
+        "MSE": 0.06024386042702217,
+        "MAE": 0.18455535160729247,
+        "NIS": 0.023348920407745395,
+        "NIS_width": 0.016539326256346326,
+        "NIS_outside": 0.006809594151399067,
+        "CRPS": 0.13063889351135383,
+        "NCRPS": 0.0027149985790056517,
+        "jitter": 1e-06,
+        "raw_noise": -5.417352263000234,
+        "noise": 0.001955797418238429,
+        "noise_std": 0.0835562648505526,
+        "outputscale": 3.9999107982464674,
+        "num_epochs": 1,
+        "best_epoch": null,
+        "cont_lengthscale_0": -3.5879703451424,
+        "cont_lengthscale_1": -6.0,
+        "cont_lengthscale_2": -2.726998983342612,
+        "cont_lengthscale_3": -2.9510765370991003,
+        "cont_lengthscale_4": -5.101890710342872,
+        "cont_lengthscale_5": -4.685548896239285,
+        "cont_lengthscale_6": -1.9176729016513383,
+        "cont_lengthscale_7": -2.2961676310050434,
+        "cont_lengthscale_8": -3.1002151073921675,
+        "cont_lengthscale_9": -5.839420296897181,
+        "y_train_mean": 271.9357287096342,
+        "y_train_std": 42.72235154385829
+      },
+      {
+        "Total_Time": 6.909275212441571,
+        "Full_Train_Time": 6.870452799950726,
+        "Train_Time": 5.498750599974301,
+        "Log_Time": 1.3717021999764256,
+        "Prediction_Time": 0.03882241249084473,
+        "RRMSE": 0.005080597961758171,
+        "RMSE": 0.24446557771061928,
+        "MSE": 0.05976341868538683,
+        "MAE": 0.18351733256494013,
+        "NIS": 0.023621313465329485,
+        "NIS_width": 0.01680110064239962,
+        "NIS_outside": 0.006820212822929864,
+        "CRPS": 0.13043052908844266,
+        "NCRPS": 0.0027106682521258548,
+        "jitter": 1e-06,
+        "raw_noise": -5.420092421264617,
+        "noise": 0.001949637139700187,
+        "noise_std": 0.09026290347996431,
+        "outputscale": 3.9999909728963674,
+        "num_epochs": 1,
+        "best_epoch": null,
+        "cont_lengthscale_0": -3.2430847530821243,
+        "cont_lengthscale_1": -5.999993785552074,
+        "cont_lengthscale_2": -2.883428533396079,
+        "cont_lengthscale_3": -2.950062453729869,
+        "cont_lengthscale_4": -4.809690101854152,
+        "cont_lengthscale_5": -4.608676673180419,
+        "cont_lengthscale_6": -2.0168091445270244,
+        "cont_lengthscale_7": -2.8326246498232095,
+        "cont_lengthscale_8": -2.953171219766037,
+        "cont_lengthscale_9": -6.0,
+        "y_train_mean": 270.58758751413086,
+        "y_train_std": 46.29728355187409
+      }
+    ],
+    "gp_model_info": {
+      "model_str": "GPR(\n  (likelihood): LogGaussianLikelihood(\n    (noise_covar): LogScaleHomoskedasticNoise(\n      (raw_noise_constraint): SoftClamp(-7, -1, margin=0.01)\n    )\n  )\n  (mean_module): ConstantMean()\n  (covar_module): LogScaleKernel(\n    (base_kernel): GaussianKernel(\n      (raw_lengthscale_constraint): SoftClamp(-6, 3, margin=0.01)\n    )\n    (raw_outputscale_constraint): SoftClamp(-5, 4, margin=0.01)\n  )\n)",
+      "cat_cols": [],
+      "cont_cols": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "source_cols": [],
+      "qual_dict": {},
+      "input_dim": 10,
+      "train_samples": 200,
+      "test_samples": 5000,
+      "standardize_X": true,
+      "standardize_y": true,
+      "x_standardize_method": 2,
+      "X_scaling_type": "UniformScaler [-1, 1]",
+      "dtype": "torch.float64",
+      "device": "cpu",
+      "num_epochs": 1,
+      "num_inits": 16,
+      "lr": null,
+      "optimizer": "LBFGSScipy",
+      "convergence_patience": 10,
+      "initializer": "DefaultParameterInitializer",
+      "y_test_mean": 268.0807062112177,
+      "y_test_std": 48.12229382766953,
+      "num_runs": 2,
+      "seed": 42,
+      "seed_trainer": null
+    }
+  },
+  "defaults_py": "import gpplus\nimport torch\nfrom gpplus.training.callbacks import (\n    FinalParameterStorageCallback,\n    IterationParameterCallback,\n    EpochParameterCallback,\n    LBFGSInnerMetricsCallbackV3,\n)\nfrom gpplus.training.optimizers import LBFGSScipy\n\nX_STANDARDIZE_METHOD = 2  # 0=Gaussian (StandardScaler), 1=Uniform [0,1], 2=Uniform [-1,1]\nSTANDARDIZE_X = True\nSTANDARDIZE_Y = True\n\nSF_kernel = None\nSF_mean = None\nSF_likelihood = None\n\nNUM_RUNS = 20 # Number of training sets to run for each problem\nTRAINER_LR = None # Using LBFGS\nTRAINER_MIN_EPOCHS = 0  # Do not consider early stopping until at least this many epochs\nTRAINER_NUM_EPOCHS = 1\nTRAINER_NUM_INITS = 16 # Number of initializations to run for each training set\nTRAINER_CONVERGENCE_PATIENCE = 10\n# TRAINER_CHOLESKY_JITTER = 0\nTRAINER_CHOLESKY_JITTER = 1e-6\nTRAINER_MIN_LOSS_CHANGE = 1e-7\n# TRAINER_OPTIMIZER_CLASS = torch.optim.Adam\nTRAINER_OPTIMIZER_CLASS = gpplus.training.optimizers.LBFGSScipy\n# TRAINER_OPTIMIZER_KWARGS = {\"max_iter\": 20, \"tolerance_grad\": 1e-5, \"tolerance_change\": 1e-9, \"history_size\": 10} #1\n# TRAINER_OPTIMIZER_KWARGS = {\"max_iter\": 15000, \"max_eval\": 15000, \"tolerance_grad\": 1e-5, \"tolerance_change\": 1e-9, \"history_size\": 10} #2\nTRAINER_OPTIMIZER_KWARGS = {\"max_iter\": 2000, \"max_eval\": 2500, \"tolerance_grad\": 1e-5, \"tolerance_change\": 1e-9, \"history_size\": 10} #2\n# TRAINER_OPTIMIZER_KWARGS = {\"max_iter\": 20}   # 0 \nTRAINER_LOG_LBFGS_INNER = True\n\nTRAINER_INITIALIZER_CLASS = gpplus.training.parameter_initializer.DefaultParameterInitializer\nTRAINER_GP_DEVICE = 'cpu'\nTRAINER_AMP_DEVICE = 'cuda'\nDTYPE_GP = torch.float64\nDTYPE_PFN = torch.float32\nNOISE_TYPE = \"gaussian\"\n\n\n# TRAINER_ANALYSIS = True # make settings into problems\n# PLOT_METRICS = False\n\nSEED = 42\nSEED_TRAINER = None\n\n\ndef get_default_gp_callbacks(\n    optimizer_class,\n    callback_save_path: str | None = None,\n    log_lbfgs_inner: bool = True,\n    lbfgs_inner_extra_metrics: list | None = None,\n):\n    \"\"\"\n    Default GP callbacks for final experiments (A1\u2013A9).\n\n    This mirrors the original train_eval3 defaults, but is now configured explicitly\n    from experiments_final instead of being hard-wired into train_eval3.\n    \"\"\"\n    callbacks: list = [FinalParameterStorageCallback(save_file=None, verbose=False)]\n\n    if optimizer_class is not None:\n        # Only set epoch callback save path when logging to disk is desired.\n        if callback_save_path is not None:\n            epoch_save_file = f\"{callback_save_path}/epoch_parameters.json\"\n        else:\n            epoch_save_file = None\n\n        # LBFGSScipy: per-iteration parameter logging + optional inner metrics\n        if optimizer_class is LBFGSScipy or (\n            isinstance(optimizer_class, type) and issubclass(optimizer_class, LBFGSScipy)\n        ):\n            callbacks.append(\n                IterationParameterCallback(\n                    save_file=None,\n                    verbose=False,\n                    save_every_n_iterations=20,\n                )\n            )\n            if log_lbfgs_inner:\n                callbacks.append(\n                    LBFGSInnerMetricsCallbackV3(\n                        log_record_every_n_iters=10,\n                        log_metrics_every_n_iters=10,\n                        log_nll=True,\n                        log_nis=True,\n                        log_loo=True,\n                        log_kf=True,\n                        log_residual_mse=True,\n                        extra_metrics=lbfgs_inner_extra_metrics or [],\n                    )\n                )\n        # Adam: per-epoch parameter logging\n        elif optimizer_class is torch.optim.Adam or (\n            isinstance(optimizer_class, type) and issubclass(optimizer_class, torch.optim.Adam)\n        ):\n            callbacks.append(\n                EpochParameterCallback(\n                    save_file=epoch_save_file,\n                    verbose=False,\n                    save_every_n_epochs=20,\n                )\n            )\n\n    return callbacks\n\ndef MF_kernel(\n    cont_cols=None,\n    cat_cols=None,\n    source_cols=None,\n    cont_kernel=None,\n    cat_kernel=None,\n    source_kernel=None,\n    cat_encoder=None,\n    source_encoder=None,\n    z_dim=2,\n    fix_lengthscale_cat=False,\n    fix_lengthscale_source=False,\n    **kwargs\n):\n    \"\"\"Factory function that creates and wraps the MF kernel.\"\"\"\n    return gpplus.kernels.LogScaleKernel(\n        gpplus.kernels.MVMFKernel(\n            cont_cols=cont_cols,\n            cat_cols=cat_cols,\n            source_cols=source_cols,\n            cont_kernel=cont_kernel,\n            cat_kernel=cat_kernel,\n            source_kernel=source_kernel,\n            cat_encoder=cat_encoder,\n            source_encoder=source_encoder,\n            z_dim=z_dim,\n            fix_lengthscale_cat=fix_lengthscale_cat,\n            fix_lengthscale_source=fix_lengthscale_source,\n            **kwargs\n        )\n    )\n\n# For current experiments, we are not using the following MF methods\n# MF_mean = gpplus.means.MultiMean\n# MF_likelihood = gpplus.likelihoods.MultiLikelihood\n# MF_STANDARDIZATION_METHOD = 2 # 0: standardize all data according to all data, 1: standardize all data according to HF data only, 2: standardize each data source independently\n"
+}

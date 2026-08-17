@@ -1,0 +1,349 @@
+{
+  "screen_functions": [
+    "forrester",
+    "chirp",
+    "discontinuity",
+    "localized_bump"
+  ],
+  "num_runs": 4,
+  "ranking": [
+    {
+      "config": {
+        "name": "baseline_default_n8_T0.9",
+        "n_estimators": 8,
+        "softmax_temperature": 0.9,
+        "average_before_softmax": false,
+        "model_path": "auto",
+        "checkpoint": "auto"
+      },
+      "mean_score": 4.114612696869364,
+      "agg_median_like": {
+        "RRMSE": 0.5733091200820325,
+        "NCRPS": 0.2810498743806226,
+        "NIS_width": 1.3935276046395302,
+        "NIS": 2.370434938710583,
+        "NIS_outside": 0.9629786238509627,
+        "NLPD": 0.2532482203739436,
+        "MAE": 0.32558701349547575
+      },
+      "per_function_scores": {
+        "forrester": 0.9115428010485993,
+        "chirp": 2.684952906904306,
+        "discontinuity": 1.1917248016319757,
+        "localized_bump": 11.670230277892575
+      }
+    },
+    {
+      "config": {
+        "name": "small-samples_n32_T0.45",
+        "n_estimators": 32,
+        "softmax_temperature": 0.45,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_small-samples.ckpt",
+        "checkpoint": "small-samples"
+      },
+      "mean_score": 4.125020817562891,
+      "agg_median_like": {
+        "RRMSE": 0.5539990010913222,
+        "NCRPS": 0.23252403476723704,
+        "NIS_width": 0.9560565557330847,
+        "NIS": 2.0628488922695403,
+        "NIS_outside": 1.0762926623992506,
+        "NLPD": -0.5779239044626944,
+        "MAE": 0.2823337572340811
+      },
+      "per_function_scores": {
+        "forrester": 0.6244727431445304,
+        "chirp": 5.675596374886758,
+        "discontinuity": 1.4604229835098426,
+        "localized_bump": 8.739591168710433
+      }
+    },
+    {
+      "config": {
+        "name": "small-samples_n16_T0.45",
+        "n_estimators": 16,
+        "softmax_temperature": 0.45,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_small-samples.ckpt",
+        "checkpoint": "small-samples"
+      },
+      "mean_score": 4.210449283936713,
+      "agg_median_like": {
+        "RRMSE": 0.5565580970205074,
+        "NCRPS": 0.2310156433373498,
+        "NIS_width": 0.951414754614234,
+        "NIS": 2.1063116758992537,
+        "NIS_outside": 1.1049601264879578,
+        "NLPD": -0.5781102386892911,
+        "MAE": 0.2897432813107759
+      },
+      "per_function_scores": {
+        "forrester": 0.8967012849794485,
+        "chirp": 5.812549641685063,
+        "discontinuity": 1.415149115969148,
+        "localized_bump": 8.717397093113192
+      }
+    },
+    {
+      "config": {
+        "name": "default_n16_T0.9",
+        "n_estimators": 16,
+        "softmax_temperature": 0.9,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_default.ckpt",
+        "checkpoint": "default"
+      },
+      "mean_score": 4.3082232867840125,
+      "agg_median_like": {
+        "RRMSE": 0.5808736003122343,
+        "NCRPS": 0.27933549944571145,
+        "NIS_width": 1.3953441511839628,
+        "NIS": 2.4339050353166956,
+        "NIS_outside": 1.024844106569879,
+        "NLPD": 0.2772598246647178,
+        "MAE": 0.32206808938347053
+      },
+      "per_function_scores": {
+        "forrester": 0.8673675923470521,
+        "chirp": 2.690312726304807,
+        "discontinuity": 1.1919831556709155,
+        "localized_bump": 12.483229672813277
+      }
+    },
+    {
+      "config": {
+        "name": "quantiles_n16_T0.45",
+        "n_estimators": 16,
+        "softmax_temperature": 0.45,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_quantiles.ckpt",
+        "checkpoint": "quantiles"
+      },
+      "mean_score": 4.35254718526227,
+      "agg_median_like": {
+        "RRMSE": 0.567183426383164,
+        "NCRPS": 0.23799632457385958,
+        "NIS_width": 0.9678912237286568,
+        "NIS": 2.145963206193046,
+        "NIS_outside": 1.1445351686667387,
+        "NLPD": -0.5243856187274742,
+        "MAE": 0.31829055060972133
+      },
+      "per_function_scores": {
+        "forrester": 0.9760133153362156,
+        "chirp": 5.88854627846729,
+        "discontinuity": 1.4046514642211876,
+        "localized_bump": 9.140977683024385
+      }
+    },
+    {
+      "config": {
+        "name": "real_n16_T0.45",
+        "n_estimators": 16,
+        "softmax_temperature": 0.45,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_real.ckpt",
+        "checkpoint": "real"
+      },
+      "mean_score": 4.817564068329355,
+      "agg_median_like": {
+        "RRMSE": 0.5885767028134369,
+        "NCRPS": 0.24622447686048782,
+        "NIS_width": 0.9734388887882233,
+        "NIS": 2.273986728571786,
+        "NIS_outside": 1.289019759193184,
+        "NLPD": -0.4160542499361568,
+        "MAE": 0.3330508075556559
+      },
+      "per_function_scores": {
+        "forrester": 0.9285850066638377,
+        "chirp": 5.172767858339798,
+        "discontinuity": 1.657366030111496,
+        "localized_bump": 11.511537378202286
+      }
+    },
+    {
+      "config": {
+        "name": "small-samples_n16_T0.3",
+        "n_estimators": 16,
+        "softmax_temperature": 0.3,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_small-samples.ckpt",
+        "checkpoint": "small-samples"
+      },
+      "mean_score": 5.957593742949775,
+      "agg_median_like": {
+        "RRMSE": 0.5720183684769241,
+        "NCRPS": 0.2377578011255561,
+        "NIS_width": 0.8065363932400942,
+        "NIS": 2.548178029735595,
+        "NIS_outside": 1.696843278571087,
+        "NLPD": -0.6976441264952709,
+        "MAE": 0.29652049215910464
+      },
+      "per_function_scores": {
+        "forrester": 1.8907085501549334,
+        "chirp": 10.402457711422983,
+        "discontinuity": 1.6067527895964946,
+        "localized_bump": 9.930455920624688
+      }
+    },
+    {
+      "config": {
+        "name": "default_n16_T0.45",
+        "n_estimators": 16,
+        "softmax_temperature": 0.45,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_default.ckpt",
+        "checkpoint": "default"
+      },
+      "mean_score": 9.129370933503601,
+      "agg_median_like": {
+        "RRMSE": 0.6099631046915246,
+        "NCRPS": 0.26105805393038484,
+        "NIS_width": 0.9234145325608552,
+        "NIS": 3.6437206189320506,
+        "NIS_outside": 2.720051562828464,
+        "NLPD": 0.3353845777805238,
+        "MAE": 0.32630375155751973
+      },
+      "per_function_scores": {
+        "forrester": 0.7856464039228035,
+        "chirp": 5.555586728801957,
+        "discontinuity": 1.5488687330766036,
+        "localized_bump": 28.62738186821304
+      }
+    },
+    {
+      "config": {
+        "name": "default_n32_T0.45",
+        "n_estimators": 32,
+        "softmax_temperature": 0.45,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_default.ckpt",
+        "checkpoint": "default"
+      },
+      "mean_score": 9.493936067414,
+      "agg_median_like": {
+        "RRMSE": 0.6002518313864791,
+        "NCRPS": 0.2573339149180939,
+        "NIS_width": 0.9267137078568339,
+        "NIS": 3.7566983889998915,
+        "NIS_outside": 2.845666841119845,
+        "NLPD": 0.2746242279214898,
+        "MAE": 0.30736978623905575
+      },
+      "per_function_scores": {
+        "forrester": 0.7945179613655085,
+        "chirp": 5.360393614408563,
+        "discontinuity": 1.4994158500525534,
+        "localized_bump": 30.321416843829375
+      }
+    },
+    {
+      "config": {
+        "name": "default_n8_T0.45",
+        "n_estimators": 8,
+        "softmax_temperature": 0.45,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_default.ckpt",
+        "checkpoint": "default"
+      },
+      "mean_score": 9.504400781155782,
+      "agg_median_like": {
+        "RRMSE": 0.6003272868746723,
+        "NCRPS": 0.25938240248301453,
+        "NIS_width": 0.9045156864449382,
+        "NIS": 3.787458766483957,
+        "NIS_outside": 2.851036867180789,
+        "NLPD": 0.1650835444428546,
+        "MAE": 0.3208133291594454
+      },
+      "per_function_scores": {
+        "forrester": 0.7300392927046008,
+        "chirp": 5.558938520440934,
+        "discontinuity": 1.624384785334922,
+        "localized_bump": 30.10424052614267
+      }
+    },
+    {
+      "config": {
+        "name": "default_n16_T0.3",
+        "n_estimators": 16,
+        "softmax_temperature": 0.3,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_default.ckpt",
+        "checkpoint": "default"
+      },
+      "mean_score": 10.845540342902325,
+      "agg_median_like": {
+        "RRMSE": 0.6256958795394293,
+        "NCRPS": 0.2668437442286792,
+        "NIS_width": 0.7826088261790574,
+        "NIS": 4.090573093255973,
+        "NIS_outside": 3.301362543323849,
+        "NLPD": 2.4908859147665305,
+        "MAE": 0.3370957242843616
+      },
+      "per_function_scores": {
+        "forrester": 1.6452404813661656,
+        "chirp": 9.8446212888587,
+        "discontinuity": 1.6990949154696546,
+        "localized_bump": 30.193204685914782
+      }
+    },
+    {
+      "config": {
+        "name": "default_n8_T0.3",
+        "n_estimators": 8,
+        "softmax_temperature": 0.3,
+        "average_before_softmax": false,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_default.ckpt",
+        "checkpoint": "default"
+      },
+      "mean_score": 11.058942889905078,
+      "agg_median_like": {
+        "RRMSE": 0.615353883375558,
+        "NCRPS": 0.26418193100609033,
+        "NIS_width": 0.7744960431009531,
+        "NIS": 4.183245876102351,
+        "NIS_outside": 3.377777820146032,
+        "NLPD": 7.828560243070474,
+        "MAE": 0.3248115709449738
+      },
+      "per_function_scores": {
+        "forrester": 1.7563393368839095,
+        "chirp": 9.737062827185827,
+        "discontinuity": 1.907109147375546,
+        "localized_bump": 30.835260248175025
+      }
+    },
+    {
+      "config": {
+        "name": "default_n16_T0.3_avgSoftmax",
+        "n_estimators": 16,
+        "softmax_temperature": 0.3,
+        "average_before_softmax": true,
+        "model_path": "C:\\Users\\kianb\\AppData\\Roaming\\tabpfn\\tabpfn-v2.5-regressor-v2.5_default.ckpt",
+        "checkpoint": "default"
+      },
+      "mean_score": 14.349930888096958,
+      "agg_median_like": {
+        "RRMSE": 0.6418733315607975,
+        "NCRPS": 0.2789135935269019,
+        "NIS_width": 0.6586494891089387,
+        "NIS": 5.114802157876208,
+        "NIS_outside": 4.474538880607044,
+        "NLPD": 19370.950476881728,
+        "MAE": 0.3186377974775913
+      },
+      "per_function_scores": {
+        "forrester": 3.488682748465706,
+        "chirp": 12.34151670944124,
+        "discontinuity": 2.6709068061896537,
+        "localized_bump": 38.898617288291234
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+\begin{figure*}[hptb]
+    \centering
+    \captionsetup{font=footnotesize}
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/buckling_xdim4_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Buckling: D$_x$=4}
+        \label{fig loo NCRPS buckling}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/borehole_xdim8_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Borehole: D$_x$=8}
+        \label{fig loo NCRPS borehole}
+    \end{minipage}
+    
+    \vspace{1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/wing_xdim10_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Wing Weight: D$_x$=10}
+        \label{fig loo NCRPS wing}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/ackley_xdim20_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Ackley: D$_x$=20}
+        \label{fig loo NCRPS ackley20}
+    \end{minipage}
+
+    \vspace{1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/griewank_xdim20_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Griewank: D$_x$=20}
+        \label{fig loo NCRPS griewank}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/zakharov_xdim20_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Zakharov: D$_x$=20}
+        \label{fig loo NCRPS zakharov}
+    \end{minipage}
+
+    \vspace{1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/ackley_xdim40_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Ackley: D$_x$=40}
+        \label{fig loo NCRPS ackley40}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots_gpplus_comparison_LOO/dixonprice_xdim40_gpplus_comparison_NCRPS.pdf}
+        \subcaption{Dixon-Price: D$_x$=40}
+        \label{fig loo NCRPS dixon}
+    \end{minipage}
+    
+    \caption{Evaluations based on NCRPS in \Cref{eq ncrps}: Noise is either $\varepsilon \sim \mathcal{N}(0, (0.002\times c)^2)$ or $\varepsilon \sim \mathcal{N}(0, (0.08\times c)^2)$. GPs are used on CPU while TabPFN is used on GPU. All the GPs are trained with the \textit{default} settings of GP+ and GPyTorch packages. GP+ (PE) and GP+ (LOO) denote cases where the default Gaussian kernel and loss function are switched to, respectively, the PE kernel and LOO-based loss in \Cref{eq loocv}.}
+
+    \label{fig results loo NCRPS}
+\end{figure*}
