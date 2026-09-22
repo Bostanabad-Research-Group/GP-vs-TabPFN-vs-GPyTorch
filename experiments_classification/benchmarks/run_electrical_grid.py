@@ -3,7 +3,7 @@
 import numpy as np
 from ucimlrepo import fetch_ucirepo
 
-from gpc_benchmark import DatasetSpec, run_sweep
+from gpc_benchmark import DatasetSpec, default_output_dir, run_sweep
 
 # All entries are lists
 SWEEP = {
@@ -13,7 +13,7 @@ SWEEP = {
     "adam":           [{"lr": 0.01, "num_epochs": 2000}],
     # None disables early stopping
     "early_stopping": [{"val_fraction": 0.2, "patience": 20, "check_every": 10}],
-    "seeds":          [0],
+    "seeds":          list(range(10)),
     "num_inits":      [16],
     "run_tabpfn":     True,
     # "gaussian", "matern_0.5", "powerexp"
@@ -49,7 +49,7 @@ def load_electrical_grid(_cfg):
 
 SPEC = DatasetSpec(
     name="electrical_grid",
-    output_dir="electrical_grid_results",
+    output_dir=default_output_dir("electrical_grid"),
     loader=load_electrical_grid,
     test_mode="complement",
 )

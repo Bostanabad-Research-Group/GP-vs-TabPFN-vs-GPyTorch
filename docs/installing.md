@@ -1,5 +1,7 @@
 # Installing GPPlus
 
+The experiments in this repository do not use this page. Follow the setup in the repository README and install with `pip install -r requirements.txt` from the repo root. `pip install gpplus` can install a different copy than the `gpplus/` folder here.
+
 **Requirements**:
 
 - Python == 3.9  

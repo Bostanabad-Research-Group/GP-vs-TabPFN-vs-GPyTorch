@@ -16,8 +16,8 @@ eval_type_backport==0.3.1
 filelock==3.20.2
 fonttools==4.61.1
 fsspec==2025.12.0
-# GP+ from this repo (pin @<commit> on main for reproducibility; use `-e .` when developing locally)
--e git+https://github.com/kianswarehouse/GPvsPFN.git@main#egg=gpplus
+# GP+ from this repo. Do not install the older GPvsPFN checkout over this tree.
+-e .
 gpytorch==1.14
 h11==0.16.0
 hf-xet==1.2.0
@@ -70,3 +70,9 @@ typing_extensions==4.15.0
 tzdata==2025.3
 urllib3==2.6.3
 wadler_lindig==0.1.7
+
+# Classification benchmarks (UCI download and parquet).
+ucimlrepo>=0.0.7
+pyarrow>=15
+# Violin plots. The scripts still run if seaborn is missing.
+seaborn>=0.13

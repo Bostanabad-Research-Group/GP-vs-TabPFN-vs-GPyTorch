@@ -1,26 +1,7 @@
 """
-Candidate 1D regression equations for the GP-vs-PFN comparison.
+Equations for the five 1D regression examples in the paper.
 
-Goal: pick a "good" 1D function to benchmark a Gaussian Process (stationary
-RBF/Matern-style kernel) against TabPFN. The interesting test functions are the
-ones where GP and PFN are expected to *disagree*, e.g.:
-
-  - non-stationary frequency content (a stationary GP kernel has one length
-    scale, so it cannot be sharp in one region and smooth in another),
-  - discontinuities / kinks (a smooth GP prior over-smooths jumps),
-  - localized features on an otherwise flat background (length-scale conflict),
-  - heteroscedastic-looking structure.
-
-All functions follow the repo convention used in load_experimental_data.py:
-they take X of shape (n, 1) (or a 1D array) and return shape (n,). They are all
-defined on the default domain x in [-0.5, 0.5] so they can be dropped straight
-into generate_tabpfn_1d_*_data / regression_1D_GPvsPFN, except where a function
-has a canonical literature domain (noted in DOMAIN below), in which case the
-input is internally remapped from [-0.5, 0.5] to that domain.
-
-Run this file directly to render every candidate in a grid and save the figure:
-
-    python A22_regression_1D_reference_equations.py
+  python A22_regression_1D_reference_equations.py
 """
 
 from __future__ import annotations
@@ -42,32 +23,16 @@ def _as_x(X):
     return arr.ravel()
 
 
-def _remap(x, lo, hi):
-    """Map x from [X_LO, X_HI] onto [lo, hi] linearly."""
-    t = (x - X_LO) / (X_HI - X_LO)
-    return lo + t * (hi - lo)
-
-
 # --------------------------------------------------------------------------- #
-# Candidate equations
+# Paper equations
 # --------------------------------------------------------------------------- #
-def eq_smooth_multisine(X):
-    """Smooth, stationary two-tone sine. Baseline: GP (RBF) should excel.
-
-    f(x) = sin(2*pi*x) + 0.5 * sin(6*pi*x)
-    """
-    x = _as_x(X)
-    return np.sin(2 * np.pi * x) + 0.5 * np.sin(6 * np.pi * x)
-
-
 def eq_chirp(X):
-    """Non-stationary frequency (linear chirp). Stationary GP must compromise
-    its single length scale; PFN can adapt locally.
+    """Non-stationary frequency (linear chirp).
 
     f(x) = sin(2*pi * (2 + 14*(x - X_LO)) * x)
     """
     x = _as_x(X)
-    freq = 2.0 + 14.0 * (x - X_LO)  # frequency grows left -> right
+    freq = 2.0 + 14.0 * (x - X_LO)
     return np.sin(2 * np.pi * freq * x)
 
 
@@ -104,31 +69,8 @@ def eq_triangle_wave(X):
     return 2.0 * np.abs(2.0 * frac - 1.0) - 1.0
 
 
-def eq_forrester(X):
-    """Forrester et al. (2008) benchmark on its canonical domain x in [0, 1].
-
-    f(z) = (6z - 2)^2 * sin(12z - 4),  z in [0, 1]
-    """
-    x = _as_x(X)
-    z = _remap(x, 0.0, 1.0)
-    return (6 * z - 2) ** 2 * np.sin(12 * z - 4)
-
-
-def eq_gramacy_lee(X):
-    """Gramacy & Lee (2012) on its canonical domain z in [0.5, 2.5]. Increasing
-    frequency toward the left + polynomial tail; a notoriously GP-unfriendly 1D
-    benchmark.
-
-    f(z) = sin(10*pi*z) / (2z) + (z - 1)^4
-    """
-    x = _as_x(X)
-    z = _remap(x, 0.5, 2.5)
-    return np.sin(10 * np.pi * z) / (2 * z) + (z - 1) ** 4
-
-
 def eq_damped_sine(X):
-    """Amplitude-modulated (damped) sine. Heteroscedastic-looking variance in
-    the signal; tests whether the model adapts amplitude across x.
+    """Amplitude-modulated sine.
 
     f(x) = exp(-6*|x|) * sin(10*pi*x)
     """
@@ -136,29 +78,12 @@ def eq_damped_sine(X):
     return np.exp(-6.0 * np.abs(x)) * np.sin(10 * np.pi * x)
 
 
-def eq_damped_forrester(X):
-    """Damped sine plus Forrester benchmark. Combines amplitude modulation
-    with multimodal oscillations and a steep rise near the right edge.
-
-    f(x) = 5*exp(-6*|x|)*sin(10*pi*x) + (6z-2)^2*sin(12z-4),  z in [0,1]
-    """
-    x = _as_x(X)
-    z = _remap(x, 0.0, 1.0)
-    damped = np.exp(-6.0 * np.abs(x)) * np.sin(10 * np.pi * x)
-    forrester = (6 * z - 2) ** 2 * np.sin(12 * z - 4)
-    return 5.0 * damped + forrester
-
-
 CANDIDATES = {
-    "smooth_multisine": (eq_smooth_multisine, "Smooth two-tone sine (GP-friendly baseline)"),
-    "chirp": (eq_chirp, "Linear chirp (non-stationary frequency)"),
-    "discontinuity": (eq_discontinuity, "Smooth trend + Heaviside jump"),
-    "localized_bump": (eq_localized_bump, "Flat + narrow Gaussian spike"),
-    "triangle_wave": (eq_triangle_wave, "Triangle wave (periodic kinks)"),
-    "forrester": (eq_forrester, "Forrester (z in [0,1])"),
-    "gramacy_lee": (eq_gramacy_lee, "Gramacy & Lee (z in [0.5,2.5])"),
-    "damped_sine": (eq_damped_sine, "Damped sine (amplitude modulated)"),
-    "damped_forrester": (eq_damped_forrester, "Damped sine + Forrester combined"),
+    "discontinuity": (eq_discontinuity, "Discontinuous sine"),
+    "triangle_wave": (eq_triangle_wave, "Triangle wave"),
+    "chirp": (eq_chirp, "Non-stationary chirp"),
+    "localized_bump": (eq_localized_bump, "Localized bump"),
+    "damped_sine": (eq_damped_sine, "Damped sine"),
 }
 
 

@@ -11,24 +11,14 @@ from gpplus.utils.metrics_functions import analyze_metrics, plot_metrics
 from gpplus.utils.onehot_encode_data import encode_qual_data, learn_encodings
 from load_experimental_data import (
     generate_tabpfn_1d_chirp_data,
-    generate_tabpfn_1d_damped_forrester_data,
     generate_tabpfn_1d_damped_sine_data,
     generate_tabpfn_1d_discontinuity_data,
-    generate_tabpfn_1d_forrester_data,
-    generate_tabpfn_1d_gramacy_lee_data,
     generate_tabpfn_1d_localized_bump_data,
-    generate_tabpfn_1d_sin_cubic_data,
-    generate_tabpfn_1d_smooth_multisine_data,
     generate_tabpfn_1d_triangle_wave_data,
     tabpfn_1d_chirp_function,
-    tabpfn_1d_damped_forrester_function,
     tabpfn_1d_damped_sine_function,
     tabpfn_1d_discontinuity_function,
-    tabpfn_1d_forrester_function,
-    tabpfn_1d_gramacy_lee_function,
     tabpfn_1d_localized_bump_function,
-    tabpfn_1d_sin_cubic_function,
-    tabpfn_1d_smooth_multisine_function,
     tabpfn_1d_triangle_wave_function,
 )
 from experimental_utils.a22_results_io import save_predictions_npz as persist_predictions_npz
@@ -36,14 +26,12 @@ from experimental_utils.plot_tabpfn1d_comparison import (
     save_1d_all_runs_gp_tabpfn_plot,
     save_1d_train_gp_tabpfn_plot,
 )
-from tabpfn import TabPFNRegressor
-
 import gpplus
 from gpplus.utils import set_seed, train_eval_gp, train_eval_PFN
 
 
 # Functions whose true_fn requires an x_bounds kwarg (domain remapping/chirp phase).
-_X_BOUNDS_DEPENDENT_FUNCTIONS = {"forrester", "damped_forrester", "chirp", "gramacy_lee"}
+_X_BOUNDS_DEPENDENT_FUNCTIONS = {"chirp"}
 
 
 def _ensure_ncrps(metric, y_true, y_pred, output_std):
@@ -75,30 +63,6 @@ def _ensure_ncrps(metric, y_true, y_pred, output_std):
         print(f"NCRPS injection failed: {e}")
 
 REGRESSION_1D_FUNCTIONS = {
-    "forrester": {
-        "generate_data": generate_tabpfn_1d_forrester_data,
-        "true_fn": tabpfn_1d_forrester_function,
-        "default_x_bounds": [-0.5, 0.5],
-        "description": "Forrester benchmark",
-    },
-    "damped_forrester": {
-        "generate_data": generate_tabpfn_1d_damped_forrester_data,
-        "true_fn": tabpfn_1d_damped_forrester_function,
-        "default_x_bounds": [-0.5, 0.5],
-        "description": "5*damped sine + Forrester",
-    },
-    "sin_cubic": {
-        "generate_data": generate_tabpfn_1d_sin_cubic_data,
-        "true_fn": tabpfn_1d_sin_cubic_function,
-        "default_x_bounds": [0.0, 1.0],
-        "description": "1/4*sin(6*pi*x) + 6*x^3 - 7*x^2 + x + 0.5",
-    },
-    "smooth_multisine": {
-        "generate_data": generate_tabpfn_1d_smooth_multisine_data,
-        "true_fn": tabpfn_1d_smooth_multisine_function,
-        "default_x_bounds": [-0.5, 0.5],
-        "description": "sin(2*pi*x) + 0.5*sin(6*pi*x) (GP-friendly baseline)",
-    },
     "chirp": {
         "generate_data": generate_tabpfn_1d_chirp_data,
         "true_fn": tabpfn_1d_chirp_function,
@@ -123,12 +87,6 @@ REGRESSION_1D_FUNCTIONS = {
         "default_x_bounds": [-0.5, 0.5],
         "description": "Triangle wave (periodic kinks, period 0.4)",
     },
-    "gramacy_lee": {
-        "generate_data": generate_tabpfn_1d_gramacy_lee_data,
-        "true_fn": tabpfn_1d_gramacy_lee_function,
-        "default_x_bounds": [-0.5, 0.5],
-        "description": "Gramacy & Lee: sin(10*pi*z)/(2z) + (z-1)^4, z in [0.5,2.5]",
-    },
     "damped_sine": {
         "generate_data": generate_tabpfn_1d_damped_sine_data,
         "true_fn": tabpfn_1d_damped_sine_function,
@@ -139,7 +97,7 @@ REGRESSION_1D_FUNCTIONS = {
 
 
 def regression_1D_GPvsPFN(
-        function_name="damped_forrester",
+        function_name="damped_sine",
         num_runs=defaults.NUM_RUNS,
         num_test=5000,
         train_size=10,
@@ -218,10 +176,7 @@ def regression_1D_GPvsPFN(
 
     print(f" GP Device: {gp_device}")
     print(f" TabPFN Device: {amp_device}")
-    _pfn_kw = dict(device=amp_device, random_state=seed)
-    if tabpfn_kwargs:
-        _pfn_kw.update(tabpfn_kwargs)
-    regressor = TabPFNRegressor(**_pfn_kw)
+    regressor = defaults.make_tabpfn_regressor(amp_device, seed, **(tabpfn_kwargs or {}))
     if tabpfn_kwargs:
         print(f" TabPFN kwargs: {tabpfn_kwargs}")
     if save_path is not None:
@@ -648,8 +603,11 @@ def regression_1D_GPvsPFN(
 
 
 if __name__ == "__main__":
-    functions_to_run = tuple(REGRESSION_1D_FUNCTIONS.keys())
-    for fn_name in functions_to_run:
+    # Paper Figure 1 uses the five functions below, n=20, no noise.
+    # The full catalog is REGRESSION_1D_FUNCTIONS. Prefer experiments_regression/run_all.py.
+    _paper = ("discontinuity", "triangle_wave", "chirp", "localized_bump", "damped_sine")
+    _out = Path(__file__).resolve().parent / "results" / "onedim" / "A22_regression_1D"
+    for fn_name in _paper:
         print("\n" + "#" * 70)
         print(f"Running A22 GP vs PFN: {fn_name}")
         print("#" * 70)
@@ -658,20 +616,7 @@ if __name__ == "__main__":
             num_runs=10,
             train_size=20,
             dimensions=1,
-            save_path=f"./results/A22_regression_1D/{fn_name}",
-        )
-
-
-if __name__ == "__main__":
-    functions_to_run = tuple(REGRESSION_1D_FUNCTIONS.keys())
-    for fn_name in functions_to_run:
-        print("\n" + "#" * 70)
-        print(f"Running A22 GP vs PFN: {fn_name}")
-        print("#" * 70)
-        regression_1D_GPvsPFN(
-            function_name=fn_name,
-            num_runs=10,
-            train_size=100,
-            dimensions=1,
-            save_path=f"./results/A22_regression_1D/{fn_name}",
+            noise_train=0.0,
+            noise_test=0.0,
+            save_path=str(_out / fn_name),
         )

@@ -37,14 +37,14 @@ import numpy as np
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 EXPERIMENTS_DIR = SCRIPT_DIR.parent
-DEFAULT_ROOT = EXPERIMENTS_DIR / "results_IDETC"
+DEFAULT_ROOT = EXPERIMENTS_DIR / "results_paper" / "benchmarks"
 
-DIR_GP = "10_runs_logging_full_Gaussian_orig"
-DIR_PE = "10_runs_logging_full_PE_orig"
-DIR_LOO = "10_runs_logging_full_Gaussian_LOO_orig"
+DIR_GP = "10_runs_logging_full_Gaussian"
+DIR_PE = "10_runs_logging_full_PE"
+DIR_LOO = "10_runs_logging_full_Gaussian_LOO"
 DIR_PFN25 = "10_runs_PFN_V2.5"
 DIR_PFN20 = "10_runs_PFN_V2.0"
-DIR_GPYTORCH = "10_runs_gpytorch_corrected_LBFGS"
+DIR_GPYTORCH = "10_runs_gpytorch"
 
 PROBLEM_XDIM_DEFAULT = {
     "wing": 10,

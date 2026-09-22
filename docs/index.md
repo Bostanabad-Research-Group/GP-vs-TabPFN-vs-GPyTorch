@@ -1,5 +1,7 @@
 # Welcome to GPPlus
 
+The experiment instructions for this repository are in the root README. Do not use `pip install gpplus` from this page for those experiments.
+
 GPPlus is a Python Library for Generalized Gaussian Process Modeling
 
 ## Background

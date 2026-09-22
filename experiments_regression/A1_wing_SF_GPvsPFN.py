@@ -6,7 +6,6 @@ import gpplus
 import time
 from gpplus.utils.metrics_functions import analyze_metrics, plot_metrics
 from gpplus.utils import set_seed, train_eval_gp, train_eval_PFN
-from tabpfn import TabPFNRegressor
 from load_experimental_data import generate_mf_wing_data
 import defaults
 from run_metadata import experiment_data_info, pfn_model_info
@@ -64,7 +63,7 @@ def wing_SF_GPvsPFN(num_runs=defaults.NUM_RUNS,
     
     print(f" GP Device: {gp_device}")
     print(f" TabPFN Device: {amp_device}")
-    regressor = TabPFNRegressor(device=amp_device, random_state=seed)
+    regressor = defaults.make_tabpfn_regressor(amp_device, seed)
     if save_path is not None:
         plot_save_path = f"{save_path}/plots"
         # Use a trainer-analysis subdirectory for callback JSON logs

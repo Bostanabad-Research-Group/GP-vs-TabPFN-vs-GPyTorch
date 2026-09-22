@@ -151,3 +151,29 @@ def MF_kernel(
 # MF_mean = gpplus.means.MultiMean
 # MF_likelihood = gpplus.likelihoods.MultiLikelihood
 # MF_STANDARDIZATION_METHOD = 2 # 0: standardize all data according to all data, 1: standardize all data according to HF data only, 2: standardize each data source independently
+
+# "v2.5" is the default TabPFN regressor. "v2.0" uses ModelVersion.V2.
+PFN_VERSION = "v2.5"
+
+
+def make_tabpfn_regressor(device, seed=None, **extra):
+    """Build the TabPFN regressor selected by ``PFN_VERSION``.
+
+    Extra keyword arguments (for example a tuned ``model_path``) are passed
+    through. A custom ``model_path`` keeps the explicit checkpoint and skips
+    the v2.0 / v2.5 switch.
+    """
+    from tabpfn import TabPFNRegressor
+
+    kwargs = {"device": device}
+    if seed is not None:
+        kwargs["random_state"] = seed
+    kwargs.update(extra)
+    version = str(PFN_VERSION).lower()
+    if extra.get("model_path") not in (None, "auto") or version in {"v2.5", "2.5"}:
+        return TabPFNRegressor(**kwargs)
+    if version in {"v2.0", "v2", "2.0"}:
+        from tabpfn.constants import ModelVersion
+
+        return TabPFNRegressor.create_default_for_version(ModelVersion.V2, **kwargs)
+    raise ValueError(f"PFN_VERSION must be 'v2.5' or 'v2.0', got {PFN_VERSION!r}")

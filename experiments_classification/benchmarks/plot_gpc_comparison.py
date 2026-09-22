@@ -10,15 +10,20 @@ import pandas as pd
 # Non-interactive backend: these scripts only ever write files.
 matplotlib.use("Agg")
 
+_RESULTS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "results"))
+
 # Missing files are skipped
 SUMMARY_CSVS = [
-    ("electrical_grid_results/electrical_grid_summary.csv", "electrical_grid"),
-    ("truss_6d_results/truss_6d_summary.csv", "truss_6d"),
-    ("stellar_results/stellar_summary.csv", "stellar"),
-    ("steel_plates_results/steel_plates_summary.csv", "steel_plates"),
+    (os.path.join(_RESULTS, "electrical_grid", "electrical_grid_summary.csv"), "electrical_grid"),
+    (os.path.join(_RESULTS, "truss_6d", "truss_6d_summary.csv"), "truss_6d"),
+    (os.path.join(_RESULTS, "stellar", "stellar_summary.csv"), "stellar"),
+    (os.path.join(_RESULTS, "steel_plates", "steel_plates_summary.csv"), "steel_plates"),
 ]
 
-OUTPUT_DIR = "gpc_comparison_figures"
+OUTPUT_DIR = os.path.join(_RESULTS, "plots_per_dataset")
+
+# Set False to skip the per-dataset figure files and keep only the combined grid.
+WRITE_PER_DATASET = True
 
 DATASET_NAMES = {
     "electrical_grid": "Electrical Grid Stability",
@@ -36,7 +41,7 @@ SHOW_VARIANCE_BAND = False
 
 # Multi-panel figure for the paper: metrics as rows, datasets as columns
 PAPER_EXPORT = True
-PAPER_DIR = "classification_benchmark"
+PAPER_DIR = os.path.join(_RESULTS, "summary")
 PAPER_DATASETS = ["electrical_grid", "truss_6d", "stellar", "steel_plates"]
 PAPER_PANEL_W, PAPER_PANEL_H = 3.4, 2.0
 PAPER_TICK_FS, PAPER_LABEL_FS, PAPER_LEGEND_FS = 13, 13, 12
@@ -262,6 +267,7 @@ def plot_paper_grid(frames, styles):
     fig.tight_layout()
     grid_path = os.path.join(PAPER_DIR, "classification_grid.pdf")
     fig.savefig(grid_path, bbox_inches="tight")
+    fig.savefig(os.path.join(PAPER_DIR, "classification_final.png"), dpi=150, bbox_inches="tight")
     plt.close(fig)
 
     ordered = [all_handles[k] for k in sorted(all_handles,
@@ -313,8 +319,9 @@ def main():
         if sub.empty:
             continue
         frames[dataset] = sub
-        for path in plot_dataset(sub, dataset, styles):
-            print(f"Saved {path}")
+        if WRITE_PER_DATASET:
+            for path in plot_dataset(sub, dataset, styles):
+                print(f"Saved {path}")
 
     if PAPER_EXPORT:
         plot_paper_grid(frames, styles)

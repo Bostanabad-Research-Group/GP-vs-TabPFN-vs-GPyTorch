@@ -6,7 +6,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from gpc_benchmark import DatasetSpec, run_sweep
+from gpc_benchmark import DatasetSpec, default_output_dir, run_sweep
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
 
 # All entries are lists
 SWEEP = {
@@ -27,7 +29,7 @@ SWEEP = {
 TEST_SIZE = 1000
 
 DATA_CONFIG = {
-    "dataset_path": "separate_datasets/star_classification.csv",
+    "dataset_path": os.path.join(_HERE, "separate_datasets", "star_classification.csv"),
     "target_col":   "class",
     "drop_cols": [
         "obj_ID", "run_ID", "rerun_ID", "cam_col",
@@ -61,7 +63,7 @@ def load_stellar(cfg):
 
 SPEC = DatasetSpec(
     name="stellar",
-    output_dir="stellar_results",
+    output_dir=default_output_dir("stellar"),
     loader=load_stellar,
     test_mode="subsample",
     test_size=TEST_SIZE,

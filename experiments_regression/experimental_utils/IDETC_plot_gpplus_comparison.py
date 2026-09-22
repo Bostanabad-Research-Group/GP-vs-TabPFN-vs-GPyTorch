@@ -60,15 +60,15 @@ from plot_violin_metrics import (  # noqa: E402
     remove_outliers_iqr,
 )
 
-DEFAULT_ROOT = EXPERIMENTS_DIR / "results_IDETC"
+DEFAULT_ROOT = EXPERIMENTS_DIR / "results_paper" / "benchmarks"
 
-# Subfolder names under DEFAULT_ROOT
-DIR_GP = "10_runs_logging_full_Gaussian_orig"
-DIR_PE = "10_runs_logging_full_PE_orig"
-DIR_LOO = "10_runs_logging_full_Gaussian_LOO_orig"
+# Subfolder names under DEFAULT_ROOT. Older runs used the *_orig / *_corrected names.
+DIR_GP = "10_runs_logging_full_Gaussian"
+DIR_PE = "10_runs_logging_full_PE"
+DIR_LOO = "10_runs_logging_full_Gaussian_LOO"
 DIR_PFN25 = "10_runs_PFN_V2.5"
 DIR_PFN20 = "10_runs_PFN_V2.0"
-DIR_GPYTORCH = "10_runs_gpytorch_corrected_LBFGS"
+DIR_GPYTORCH = "10_runs_gpytorch"
 
 NOISE_COLOR_MAP = {
     "0.0": "#1f77b4",

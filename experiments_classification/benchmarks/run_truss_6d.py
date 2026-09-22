@@ -6,7 +6,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from gpc_benchmark import DatasetSpec, collect_levels, onehot_encode, run_sweep
+from gpc_benchmark import DatasetSpec, collect_levels, default_output_dir, onehot_encode, run_sweep
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
 
 # All entries are lists
 SWEEP = {
@@ -25,8 +27,8 @@ SWEEP = {
 
 
 DATA_PATHS = {
-    "train_path": "separate_datasets/truss_6d.parquet",
-    "test_path":  "separate_datasets/truss_6d_test.parquet",
+    "train_path": os.path.join(_HERE, "separate_datasets", "truss_6d.parquet"),
+    "test_path":  os.path.join(_HERE, "separate_datasets", "truss_6d_test.parquet"),
     "target_col": "good",
     "cont_cols":  [0, 1, 2],           # area1, area2, area3
     "cat_cols":   [[3], [4], [5]],     # mat1, mat2, mat3
@@ -68,7 +70,7 @@ def load_truss_6d(cfg):
 
 SPEC = DatasetSpec(
     name="truss_6d",
-    output_dir="truss_6d_results",
+    output_dir=default_output_dir("truss_6d"),
     loader=load_truss_6d,
     test_mode="external",
 )

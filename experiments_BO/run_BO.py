@@ -25,13 +25,30 @@ from gpplus.training.eval2 import evaluate_gp_model
 from gpplus.utils import set_seed, train_eval_gp
 from gpplus.utils.metrics_functions import compute_nis, compute_metrics
 from gpplus.utils.standard_scaler import StandardScaler, UniformScaler
-from GITBO.tabpfn_wrapper import VanillaDirectTabPFNRegressor
-from GITBO.gitbo_bo_helpers import sample_dominant_subspace, compute_acquisition_values_gitbo
 
 try:
     from tabpfn import TabPFNRegressor as SklearnTabPFNRegressor
 except ImportError:
     SklearnTabPFNRegressor = None
+
+# Set by experiments_BO/run_all.py. "v2.5" (default) or "v2.0".
+PFN_VERSION = "v2.5"
+
+
+def _make_sklearn_tabpfn(device):
+    """Vanilla TabPFN regressor used for candidate-pool expected improvement."""
+    if SklearnTabPFNRegressor is None:
+        raise ImportError(
+            "gi_pfn=False requires tabpfn. Install with: pip install tabpfn"
+        )
+    version = str(PFN_VERSION).lower()
+    if version in {"v2.0", "v2", "2.0"}:
+        from tabpfn.constants import ModelVersion
+
+        return SklearnTabPFNRegressor.create_default_for_version(
+            ModelVersion.V2, device=device
+        )
+    return SklearnTabPFNRegressor(device=device)
 
 # No defaults import: BX scripts (B1, B4, etc.) pass in all config from experiments_BO/defaults.py.
 
@@ -1045,8 +1062,8 @@ def run_BO_pfn(
     """
     Run one BO loop with a PFN surrogate.
 
-    If gi_pfn=True: use gradient-informed (GITBO) method with VanillaDirectTabPFNRegressor.
-    If gi_pfn=False: use standard TabPFNRegressor (Sklearn) + 5k Sobol candidates.
+    If gi_pfn is True this raises. The paper uses vanilla TabPFN
+    (gi_pfn=False): TabPFNRegressor plus 5,000 Sobol candidates.
     """
     device = torch.device(gp_device)
     dtype = gp_dtype
@@ -1106,173 +1123,10 @@ def run_BO_pfn(
     bounds_dev = bounds.to(device=device, dtype=dtype)
 
     if gi_pfn:
-        # --- GITBO path: gradient-informed subspace + VanillaDirectTabPFNRegressor ---
-        from GITBO.gitbo_bo_helpers import (
-            compute_acquisition_values_gitbo,
-            sample_dominant_subspace,
+        raise RuntimeError(
+            "Gradient-informed TabPFN was removed. "
+            "Use gi_pfn=False, which is the paper setting."
         )
-
-        N_PENDING = n_AF_sample if n_AF_sample else 5000
-        N_CANDIDATES = 1
-        rank_r = 15
-        scale = 0.2
-        tkwargs = {"device": torch.device(pfn_device), "dtype": pfn_dtype}
-        grad_est = None
-
-        for _ in range(max_iter):
-            # Best so far in raw space (for logging and early stopping)
-            y_signed_raw = sign * y_train_raw
-            best_signed_val, best_idx = torch.max(y_signed_raw, dim=0)
-            best_raw_val = y_train_raw[best_idx].item()
-            best_y_history.append(best_raw_val)
-
-            y_signed_clean = sign * y_train_clean_raw
-            _, best_clean_idx = torch.max(y_signed_clean, dim=0)
-            best_clean_raw_val = y_train_clean_raw[best_clean_idx].item()
-            best_y_clean_history.append(best_clean_raw_val)
-
-            if acquisition.upper() not in {"EI", "TS"}:
-                raise ValueError(f"Unsupported acquisition for PFN: {acquisition}")
-
-            t_af = time.perf_counter()
-
-            # Use the same standardized X/Y as GP for PFN training.
-            trained_X = X_train.to(**tkwargs)
-            trained_Y = (sign * y_train).reshape(-1, 1).to(**tkwargs)
-
-            if grad_est is None:
-                total_points = N_CANDIDATES * N_PENDING
-                # Sample candidates in raw space inside bounds then standardize for PFN.
-                X_pen_raw_flat = _sample_sobol_in_bounds(
-                    total_points, bounds_dev, sobol, dtype, device
-                )
-                X_pen_flat = (
-                    x_scaler.transform(X_pen_raw_flat)
-                    if x_scaler is not None
-                    else X_pen_raw_flat
-                )
-                X_pen = X_pen_flat.to(**tkwargs).view(
-                    N_PENDING, N_CANDIDATES, X_train_raw.shape[1]
-                )
-            else:
-                X_pen = sample_dominant_subspace(
-                    trained_X,
-                    trained_Y,
-                    X_train_raw.shape[1],
-                    grad_est,
-                    sobol,
-                    rank_r=rank_r,
-                    n_samples=N_PENDING,
-                    N_CANDIDATES=N_CANDIDATES,
-                    scale=scale,
-                    GI_SUBSPACE=True,
-                    tkwargs=tkwargs,
-                )
-
-            ACQ, _, grad_est = compute_acquisition_values_gitbo(
-                acquisition=acquisition,
-                DIM=X_train_raw.shape[1],
-                N_PENDING=N_PENDING,
-                N_CANDIDATES=N_CANDIDATES,
-                trained_X=trained_X,
-                trained_Y=trained_Y,
-                X_pen=X_pen,
-                gpu_device=pfn_device,
-                tkwargs=tkwargs,
-            )
-
-            X_pen_perm = X_pen.permute(1, 0, 2)
-            ACQ_perm = ACQ.permute(1, 0)
-            best_cand_idx = torch.argmax(ACQ_perm, dim=1)
-            best_candidate_std = X_pen_perm[0, best_cand_idx[0], :].unsqueeze(0)
-            # Map standardized candidate back to raw space for objective evaluation.
-            if x_scaler is not None:
-                x_next_raw = x_scaler.inverse_transform(
-                    best_candidate_std.to(device=device, dtype=dtype)
-                )
-            else:
-                x_next_raw = best_candidate_std.to(device=device, dtype=dtype)
-
-            af_time_history.append(time.perf_counter() - t_af)
-            train_time_history.append(0.0)
-            x_chosen_history.append(x_next_raw.detach().cpu().clone())
-            af_value_history.append(float(ACQ_perm[0, best_cand_idx[0]].item()))
-            # PFN predicts signed standardized y during acquisition; map back to raw y.
-            regressor_pred = VanillaDirectTabPFNRegressor(device=pfn_device)
-            x_next_std = (
-                x_scaler.transform(x_next_raw) if x_scaler is not None else x_next_raw
-            )
-            X_train_pfn = X_train.to(device=pfn_device, dtype=pfn_dtype)
-            x_next_pfn = x_next_std.to(device=pfn_device, dtype=pfn_dtype)
-            y_train_signed_pfn = (sign * y_train).to(device=pfn_device, dtype=pfn_dtype)
-            X_concat = torch.cat([X_train_pfn.unsqueeze(1), x_next_pfn.unsqueeze(1)], dim=0)
-            Y_train_time = y_train_signed_pfn.view(-1, 1)
-            Y_pad = torch.zeros(1, 1, device=pfn_device, dtype=pfn_dtype)
-            Y_full = torch.cat([Y_train_time, Y_pad], dim=0).unsqueeze(1)
-            with torch.no_grad():
-                out = regressor_pred.forward(
-                    X_concat,
-                    Y_full,
-                    single_eval_pos=X_train.shape[0],
-                )
-                logits = out["standard"]
-                pred_mean_signed_std = regressor_pred.predict_mean(logits)[X_train.shape[0] :, 0]
-            pred_mean_std = (pred_mean_signed_std * sign).to(device=device, dtype=dtype)
-            if y_scaler is not None:
-                pred_mean_raw = y_scaler.inverse_transform(pred_mean_std.unsqueeze(1)).squeeze(1)
-            else:
-                pred_mean_raw = pred_mean_std
-            y_pred_mean_history.append(float(pred_mean_raw[0].item()))
-
-            if verbose:
-                iter_idx = len(best_y_history)
-                print(
-                    f"  BO iter {iter_idx:02d} | "
-                    f"best_y={best_y_history[-1]:.4f} | "
-                    f"af={af_value_history[-1]:.4f} | "
-                    f"train_s=0.0000 | af_s={af_time_history[-1]:.4f}"
-                )
-                print("  " + "-" * 70)
-
-            y_next = objective_fn(x_next_raw.to(device=device, dtype=dtype)).to(
-                device=device, dtype=dtype
-            ).reshape(-1)
-            y_next_clean = (
-                objective_fn_clean(x_next_raw.to(device=device, dtype=dtype))
-                .to(device=device, dtype=dtype)
-                .reshape(-1)
-            )
-            new_signed = sign * y_next[0]
-            if new_signed > best_signed_val + 1e-8:
-                no_improve = 0
-            else:
-                no_improve += 1
-
-            X_train_raw = torch.cat(
-                [X_train_raw, x_next_raw.to(device=device, dtype=dtype)], dim=0
-            )
-            y_train_raw = torch.cat([y_train_raw, y_next.reshape(-1)], dim=0)
-            y_train_clean_raw = torch.cat(
-                [y_train_clean_raw, y_next_clean.reshape(-1)], dim=0
-            )
-
-            # Update standardized tensors with fixed scalers.
-            X_train = (
-                x_scaler.transform(X_train_raw) if x_scaler is not None else X_train_raw
-            )
-            y_train = (
-                y_scaler.transform(y_train_raw.unsqueeze(1)).squeeze(1)
-                if y_scaler is not None
-                else y_train_raw
-            )
-
-            if (
-                patience_no_improve is not None
-                and patience_no_improve > 0
-                and no_improve >= patience_no_improve
-            ):
-                break
-
     else:
         # --- Vanilla PFN path: TabPFNRegressor (Sklearn) + 5k Sobol ---
         if SklearnTabPFNRegressor is None:
@@ -1280,7 +1134,7 @@ def run_BO_pfn(
                 "gi_pfn=False requires tabpfn package. Install with: pip install tabpfn"
             )
 
-        regressor = SklearnTabPFNRegressor(device=pfn_device)
+        regressor = _make_sklearn_tabpfn(pfn_device)
         n_cand = n_AF_sample if n_AF_sample else 5000
 
         for _ in range(max_iter):
@@ -1410,51 +1264,20 @@ def run_BO_pfn(
             N_test = X_test_raw.shape[0]
             t_pred = time.perf_counter()
 
-            if gi_pfn:
-                # Use VanillaDirectTabPFNRegressor for test metrics
-                regressor_metrics = VanillaDirectTabPFNRegressor(device=pfn_device)
-                X_train_pfn = X_train.to(device=pfn_device, dtype=pfn_dtype)
-                X_test_std = (
-                    x_scaler.transform(X_test_raw)
-                    if x_scaler is not None
-                    else X_test_raw
-                )
-                X_test_pfn = X_test_std.to(device=pfn_device, dtype=pfn_dtype)
-                X_train_seq = X_train_pfn.unsqueeze(1)
-                X_test_seq = X_test_pfn.unsqueeze(1)
-                X_concat = torch.cat([X_train_seq, X_test_seq], dim=0)
-                y_train_signed_pfn = (sign * y_train).to(
-                    device=pfn_device, dtype=pfn_dtype
-                )
-                Y_train_time = y_train_signed_pfn.view(-1, 1)
-                Y_pad = torch.zeros(N_test, 1, device=pfn_device, dtype=pfn_dtype)
-                Y_time = torch.cat([Y_train_time, Y_pad], dim=0)
-                Y_full = Y_time.unsqueeze(1)
-                single_eval_pos = N_train_final
-                with torch.no_grad():
-                    out = regressor_metrics.forward(X_concat, Y_full, single_eval_pos)
-                    logits = out["standard"]
-                    mean_all = regressor_metrics.predict_mean(logits)
-                    var_all = regressor_metrics.predict_variance(logits)
-                    std_all = torch.clamp(var_all, min=1e-8).sqrt()
-                # PFN predictions are in standardized-y space; map back to raw like GP.
-                mean_test_signed_std = mean_all[single_eval_pos:, 0]
-                std_test_std = std_all[single_eval_pos:, 0]
-            else:
-                # Use TabPFNRegressor predict (no uncertainty from sklearn API)
-                X_train_np = X_train.cpu().numpy()
-                X_test_std = (
-                    x_scaler.transform(X_test_raw)
-                    if x_scaler is not None
-                    else X_test_raw
-                )
-                X_test_np = X_test_std.cpu().numpy()
-                y_train_signed_np = (sign * y_train).cpu().numpy()
-                regressor.fit(X_train_np, y_train_signed_np)
-                mean_test_signed_std = torch.tensor(
-                    regressor.predict(X_test_np), dtype=pfn_dtype, device=pfn_device
-                )
-                std_test_std = torch.ones_like(mean_test_signed_std, device=pfn_device) * 1e-6
+            # Use TabPFNRegressor predict (no uncertainty from sklearn API)
+            X_train_np = X_train.cpu().numpy()
+            X_test_std = (
+                x_scaler.transform(X_test_raw)
+                if x_scaler is not None
+                else X_test_raw
+            )
+            X_test_np = X_test_std.cpu().numpy()
+            y_train_signed_np = (sign * y_train).cpu().numpy()
+            regressor.fit(X_train_np, y_train_signed_np)
+            mean_test_signed_std = torch.tensor(
+                regressor.predict(X_test_np), dtype=pfn_dtype, device=pfn_device
+            )
+            std_test_std = torch.ones_like(mean_test_signed_std, device=pfn_device) * 1e-6
 
             pred_time = time.perf_counter() - t_pred
 

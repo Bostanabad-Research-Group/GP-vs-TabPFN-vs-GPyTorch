@@ -25,8 +25,8 @@ from matplotlib.lines import Line2D
 
 from experimental_utils.a22_results_io import load_predictions_npz
 
-RESULTS_ROOT = Path(__file__).resolve().parent / "results_1D" / "A22_regression_1D"
-TUNED_ROOT = Path(__file__).resolve().parent / "results_1D" / "A22_regression_1D_tabpfn_tuned"
+RESULTS_ROOT = Path(__file__).resolve().parent / "results_paper" / "onedim" / "A22_regression_1D"
+TUNED_ROOT = Path(__file__).resolve().parent / "results_paper" / "onedim" / "A22_regression_1D_tabpfn_tuned"
 DEFAULT_OUT = RESULTS_ROOT / "1D_regression_figure"
 DEFAULT_OUT_TUNED = TUNED_ROOT / "1D_regression_figure_tuned"
 

@@ -41,7 +41,9 @@ BO_N_AF_OPT = 64 # number of initialization points to optimize from in the GP mo
 BO_N_AF_SAMPLE = 5000 # number of sample points to evaluate in the AF (simple method)
 BO_MAX_ITER = 30
 BO_PATIENCE_NO_IMPROVE = 10
-BO_GI_PFN = False  # If True, use gradient-informed (GITBO) PFN; else vanilla PFN + Sobol 5k
+BO_GI_PFN = False  # Paper setting: vanilla TabPFN plus 5,000 Sobol candidates.
+# Paper BO uses vanilla TabPFN (BO_GI_PFN=False). "v2.5" or "v2.0".
+PFN_VERSION = "v2.5"
 
 TRAINER_INFO = False
 BO_FULL_INFO = True

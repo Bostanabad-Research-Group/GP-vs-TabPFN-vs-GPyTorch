@@ -31,22 +31,14 @@ from plot_BO import (
 )
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-OUT_DIR = SCRIPT_DIR / "results_BO" / "BO_plots_IDETC"
+OUT_DIR = SCRIPT_DIR / "results_paper" / "summary"
 
-# Same model paths as plot_BO.py
+# Paper models. Paths are relative to experiments_BO/.
 DEFAULT_PATHS: list[tuple[str, str]] = [
-    ("results_BO/GP+", "GP+"),
-    # ("results_BO/GP+_TS", "GP+_TS"),
-    # ("results_BO/GP+_no_AF_optimize", "GP+_no_AF_optimize"),
-    ("results_BO/PFN_V2.0", "PFN 2.0"),
-    # # ("results_BO/PFN_V2.0_GI", "PFN 2.0_GI"),
-    # ("results_BO/PFN_V2.0_TS", "PFN 2.0_TS"),
-    # # ("results_BO/PFN_V2.0_TS_GI", "PFN 2.0_TS_GI"),
-    # ("results_BO/PFN_V2.5_BROKE", "PFN 2.5_old"),
-    ("results_BO/PFN_V2.5", "PFN 2.5"),
-    # ("results_BO/PFN_V2.5_TS", "PFN 2.5_TS"),
-
-  ]
+    ("results_paper/GP+", "GP+"),
+    ("results_paper/PFN_V2.0", "PFN 2.0"),
+    ("results_paper/PFN_V2.5", "PFN 2.5"),
+]
 # 8 subplots in order: (folder, dim_key, subtitle)
 # Desired order: Buckling, Borehole, Wing, Ackley 20D, Griewank 20D, Zakharov 20D, Ackley 40D, Dixon-Price 40D
 IDETC_PROBLEMS: list[tuple[str, str, str]] = [
@@ -330,6 +322,19 @@ def plot_idetc_figures(
         clean_suffix = "_clean" if use_clean_y else ""
 
     for noise_config, noise_label in [(NOISE_LOW, "0.002"), (NOISE_HIGH, "0.08")]:
+        has_any = False
+        for folder, dim_key, _subtitle in IDETC_PROBLEMS:
+            key = (folder, dim_key, noise_config)
+            for data in all_data:
+                if data.get(key):
+                    has_any = True
+                    break
+            if has_any:
+                break
+        if not has_any:
+            print(f"No BO runs for noise {noise_label}; skipping that figure.")
+            continue
+
         fig, axes = plt.subplots(3, 3, figsize=(14, 12))
         axes_flat = axes.flatten()
 

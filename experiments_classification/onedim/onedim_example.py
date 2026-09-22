@@ -3,6 +3,7 @@
 # probability for each, alongside TabPFN v2.5 and v2.0 on the same data
 # Produces one figure
 
+import os
 import random
 
 import gpytorch
@@ -44,7 +45,13 @@ CLASS_0_POINTS = [-0.65, -0.55, -0.45, -0.35, -0.25, 0.60, 0.72, 0.82, 0.92]
 # Either class is complete on its own since probabilities add to 1 for both
 PLOT_CLASS = 1
 
-OUTPUT_PATH = "onedim_example.png"
+OUTPUT_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..",
+    "results",
+    "onedim",
+    "onedim_example.png",
+)
 
 
 # Experiment settings
@@ -278,6 +285,7 @@ def plot_figure(gp_results, tabpfn_results, X_train, y_train, x_grid, out_path):
                columnspacing=1.4, handletextpad=0.5, borderaxespad=0.0)
 
     fig.tight_layout(pad=0.4, w_pad=0.6, rect=(0, 0, 1, 0.88))
+    os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     fig.savefig(out_path, dpi=DPI, bbox_inches="tight")
     plt.close(fig)
 

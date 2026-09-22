@@ -42,7 +42,7 @@ warnings.filterwarnings("ignore")
 
 RESULTS_ROOT = Path("./results_1D/A22_regression_1D")
 TUNED_ROOT = Path("./results_1D/A22_regression_1D_tabpfn_tuned")
-SCREEN_FUNCS = ("forrester", "chirp", "discontinuity", "localized_bump")
+SCREEN_FUNCS = ("chirp", "discontinuity", "localized_bump", "damped_sine")
 CKPT = {
     "default": "tabpfn-v2.5-regressor-v2.5_default.ckpt",
     "small-samples": "tabpfn-v2.5-regressor-v2.5_small-samples.ckpt",

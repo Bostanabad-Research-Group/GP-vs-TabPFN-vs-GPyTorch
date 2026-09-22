@@ -3,7 +3,7 @@
 import numpy as np
 from ucimlrepo import fetch_ucirepo
 
-from gpc_benchmark import DatasetSpec, onehot_encode, run_sweep
+from gpc_benchmark import DatasetSpec, default_output_dir, onehot_encode, run_sweep
 
 # All entries are lists
 SWEEP = {
@@ -59,7 +59,7 @@ def load_steel_plates(_cfg):
 
 SPEC = DatasetSpec(
     name="steel_plates",
-    output_dir="steel_plates_results",
+    output_dir=default_output_dir("steel_plates"),
     loader=load_steel_plates,
     test_mode="complement",
 )

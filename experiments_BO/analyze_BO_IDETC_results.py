@@ -1,5 +1,5 @@
 """
-Analyze BO results for the same problems used in `plot_BO_IDETC_overleaf.py`.
+Analyze archived Bayesian optimization results and write a markdown table.
 
 Computes mean / median / std over the *final* best-y values across runs, for:
   - noisy metric: final(best_y_history)
@@ -14,7 +14,7 @@ Run:
 
 Output:
   - prints markdown tables to stdout (no plotting)
-  - writes markdown to: experiments_BO/results_BO/gpVpfn_BO_summary/bo_idetc_results_summary.md
+  - writes markdown to: experiments_BO/results_paper/summary/bo_idetc_results_summary.md
 """
 
 from __future__ import annotations
@@ -26,15 +26,16 @@ import numpy as np
 
 from plot_BO import RunTuple, collect_runs
 from plot_BO_IDETC import IDETC_PROBLEMS, MAXIMIZATION_PROBLEMS, NOISE_HIGH, NOISE_LOW
-from plot_BO_IDETC_overleaf import (
-    OVERLEAF_MODELS,
-    PROBLEM_DIM_INFO,
-    PROBLEM_NAME_OVERRIDES,
-)
+
+PAPER_MODELS = [
+    ("results_paper/GP+", "GP+"),
+    ("results_paper/PFN_V2.0", "PFN 2.0"),
+    ("results_paper/PFN_V2.5", "PFN 2.5"),
+]
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-OUT_MD = SCRIPT_DIR / "results_BO" / "gpVpfn_BO_summary" / "bo_idetc_results_summary.md"
+OUT_MD = SCRIPT_DIR / "results_paper" / "summary" / "bo_idetc_results_summary.md"
 
 
 @dataclass(frozen=True)
@@ -127,9 +128,7 @@ def _winner_labels(
 
 
 def _problem_display(folder: str, dim_key: str, subtitle: str) -> tuple[str, str]:
-    name = PROBLEM_NAME_OVERRIDES.get((folder, dim_key), subtitle)
-    dim = PROBLEM_DIM_INFO.get((folder, dim_key), dim_key or "")
-    return name, dim
+    return subtitle, dim_key or ""
 
 
 def _collect_by_model(models: list[tuple[Path, str]], use_clean_y: bool) -> list[dict[tuple[str, str, str], list[RunTuple]]]:
@@ -141,7 +140,7 @@ def _collect_by_model(models: list[tuple[Path, str]], use_clean_y: bool) -> list
 
 
 def build_markdown() -> str:
-    models = [(SCRIPT_DIR / rel, label) for rel, label in OVERLEAF_MODELS]
+    models = [(SCRIPT_DIR / rel, label) for rel, label in PAPER_MODELS]
     model_labels = [label for _p, label in models]
 
     all_data_noisy = _collect_by_model(models, use_clean_y=False)
@@ -164,7 +163,7 @@ def build_markdown() -> str:
     lines.append("")
     lines.append("- **What is summarized**: for each (problem, noise, model), stats over runs of the *final* value of best-so-far.")
     lines.append("- **Metrics**: `final_best_y` (noisy) and `final_best_y_clean` (clean, fallback to noisy if missing).")
-    lines.append("- **Direction**: lower is better everywhere; for maximization problems we report `-y` (matching `plot_BO_IDETC_overleaf.py`).")
+    lines.append("- **Direction**: lower is better everywhere; for maximization problems we report `-y`.")
     lines.append("")
 
     for noise_key, noise_label in noise_configs:

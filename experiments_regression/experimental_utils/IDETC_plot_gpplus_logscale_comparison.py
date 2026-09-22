@@ -52,20 +52,29 @@ from plot_violin_metrics import (  # noqa: E402
     remove_outliers_iqr,
 )
 
-DEFAULT_ROOT = EXPERIMENTS_DIR / "results_logscale_study"
+DEFAULT_ROOT = EXPERIMENTS_DIR / "results_paper" / "logscale"
+BENCHMARK_ROOT = EXPERIMENTS_DIR / "results_paper" / "benchmarks"
 DEFAULT_PROBLEMS = ("zakharov", "buckling")
 
-# Subfolder names under DEFAULT_ROOT
-DIR_GP = "10_runs_logging_full_Gaussian_orig"
-DIR_PE = "10_runs_logging_full_PE_orig"
-DIR_LOO = "10_runs_logging_full_Gaussian_LOO_orig"
+# Untransformed runs live next to the other benchmarks. Log-scale runs live here.
+DIR_GP = "10_runs_logging_full_Gaussian"
+DIR_PE = "10_runs_logging_full_PE"
+DIR_LOO = "10_runs_logging_full_Gaussian_LOO"
 DIR_GP_LOG = "10_runs_logging_full_Gaussian_logscale"
 DIR_PE_LOG = "10_runs_logging_full_PE_logscale"
 DIR_LOO_LOG = "10_runs_logging_full_Gaussian_LOO_logscale"
 DIR_PFN25 = "10_runs_PFN_V2.5"
 DIR_PFN20 = "10_runs_PFN_V2.0"
-DIR_GPYTORCH = "10_runs_gpytorch_corrected_LBFGS"
+DIR_GPYTORCH = "10_runs_gpytorch"
 DIR_GPYTORCH_LOG = "10_runs_gpytorch_corrected_LBFGS_logscale"
+
+
+def _existing(base: Path, name: str, *fallbacks: Path) -> Path:
+    candidates = [base / name, *fallbacks]
+    for path in candidates:
+        if path.is_dir():
+            return path
+    return base / name
 
 NOISE_COLOR_MAP = {
     "0.0": "#1f77b4",
@@ -470,15 +479,16 @@ def main() -> None:
     args = parser.parse_args()
 
     root = args.root
-    gp_dir = args.gp_dir or (root / DIR_GP)
-    pe_dir = args.pe_dir or (root / DIR_PE)
-    loo_dir = args.loo_dir or (root / DIR_LOO)
+    bench = BENCHMARK_ROOT if root == DEFAULT_ROOT else root.parent / "benchmarks"
+    gp_dir = args.gp_dir or _existing(root, DIR_GP, bench / DIR_GP)
+    pe_dir = args.pe_dir or _existing(root, DIR_PE, bench / DIR_PE)
+    loo_dir = args.loo_dir or _existing(root, DIR_LOO, bench / DIR_LOO)
     gp_log_dir = args.gp_log_dir or (root / DIR_GP_LOG)
     pe_log_dir = args.pe_log_dir or (root / DIR_PE_LOG)
     loo_log_dir = args.loo_log_dir or (root / DIR_LOO_LOG)
-    pfn25 = args.tabpfn_v25_dir or (root / DIR_PFN25)
-    pfn20 = args.tabpfn_v2_dir or (root / DIR_PFN20)
-    gpytorch = args.gpytorch_dir or (root / DIR_GPYTORCH)
+    pfn25 = args.tabpfn_v25_dir or _existing(root, DIR_PFN25, bench / DIR_PFN25)
+    pfn20 = args.tabpfn_v2_dir or _existing(root, DIR_PFN20, bench / DIR_PFN20)
+    gpytorch = args.gpytorch_dir or _existing(root, DIR_GPYTORCH, bench / DIR_GPYTORCH)
     gpytorch_log = args.gpytorch_log_dir or (root / DIR_GPYTORCH_LOG)
     out_no_loo = args.out_no_loo or (root / "plots_gpplus_logscale_comparison")
     out_loo = args.out_loo or (root / "plots_gpplus_logscale_comparison_LOO")

@@ -35,6 +35,11 @@ except ImportError as _e:
     print(f"TabPFN not available: {_e}")
 
 
+def default_output_dir(name):
+    """New runs go under experiments_classification/results/<name>/."""
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "results", name))
+
+
 DTYPE = torch.float64
 
 # Validation points excluded from train and test sets
