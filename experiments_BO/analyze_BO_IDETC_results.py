@@ -14,11 +14,12 @@ Run:
 
 Output:
   - prints markdown tables to stdout (no plotting)
-  - writes markdown to: experiments_BO/results_paper/summary/bo_idetc_results_summary.md
+  - writes markdown to: results/bo_results/bo_original_results/summary/bo_idetc_results_summary.md
 """
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,15 +28,18 @@ import numpy as np
 from plot_BO import RunTuple, collect_runs
 from plot_BO_IDETC import IDETC_PROBLEMS, MAXIMIZATION_PROBLEMS, NOISE_HIGH, NOISE_LOW
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+
+from result_paths import original_results  # noqa: E402
+
 PAPER_MODELS = [
-    ("results_paper/GP+", "GP+"),
-    ("results_paper/PFN_V2.0", "PFN 2.0"),
-    ("results_paper/PFN_V2.5", "PFN 2.5"),
+    (original_results("bo") / "GP+", "GP+"),
+    (original_results("bo") / "PFN_V2.0", "PFN 2.0"),
+    (original_results("bo") / "PFN_V2.5", "PFN 2.5"),
 ]
 
-
-SCRIPT_DIR = Path(__file__).resolve().parent
-OUT_MD = SCRIPT_DIR / "results_paper" / "summary" / "bo_idetc_results_summary.md"
+OUT_MD = original_results("bo") / "summary" / "bo_idetc_results_summary.md"
 
 
 @dataclass(frozen=True)
@@ -140,7 +144,7 @@ def _collect_by_model(models: list[tuple[Path, str]], use_clean_y: bool) -> list
 
 
 def build_markdown() -> str:
-    models = [(SCRIPT_DIR / rel, label) for rel, label in PAPER_MODELS]
+    models = list(PAPER_MODELS)
     model_labels = [label for _p, label in models]
 
     all_data_noisy = _collect_by_model(models, use_clean_y=False)

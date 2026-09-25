@@ -1,7 +1,7 @@
 """Rebuild or rerun every experiment in the paper.
 
 By default this only rebuilds figures and tables from the archived results.
-It does not train anything, and it does not write into ``results_paper/``.
+It does not train anything, and it does not write into the ``*_original_results`` folders.
 
     python run_all_experiments.py
 
@@ -9,7 +9,7 @@ Rerun one regression problem, then plot that new run:
 
     python run_all_experiments.py --rerun --suite regression --problems wing --models gpplus
 
-Rerun everything (this is thousands of model fits):
+Rerun everything, including the 1D examples, the tuned TabPFN 1D overlay, and the log-scale study (this is thousands of model fits):
 
     python run_all_experiments.py --rerun --suite all --per-problem-plots
 
@@ -56,6 +56,12 @@ def main() -> None:
     parser.add_argument("--num-runs", type=int, default=None)
     parser.add_argument("--train-sizes", nargs="*")
     parser.add_argument("--no-trainer-logs", action="store_true")
+    parser.add_argument(
+        "--timeout-hours",
+        type=float,
+        default=12,
+        help="Stop one configuration if it runs longer than this, then continue.",
+    )
     args = parser.parse_args()
 
     names = list(SUITES) if "all" in args.suite else args.suite
@@ -87,8 +93,16 @@ def main() -> None:
         if args.train_sizes:
             cmd.append("--train-sizes")
             cmd.extend(str(v) for v in args.train_sizes)
-        print("\n" + " ".join(cmd))
-        subprocess.run(cmd, cwd=str(SUITES[name].parent), check=True)
+        if args.timeout_hours is not None:
+            cmd.extend(["--timeout-hours", str(args.timeout_hours)])
+        print("\n" + " ".join(cmd), flush=True)
+        completed = subprocess.run(cmd, cwd=str(SUITES[name].parent), check=False)
+        if completed.returncode != 0:
+            print(
+                f"{name} runner exited with code {completed.returncode}. "
+                "Continuing with the remaining suites.",
+                flush=True,
+            )
 
 
 if __name__ == "__main__":

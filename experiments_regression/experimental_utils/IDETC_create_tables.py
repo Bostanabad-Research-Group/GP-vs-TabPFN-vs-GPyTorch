@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -37,7 +38,11 @@ import numpy as np
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 EXPERIMENTS_DIR = SCRIPT_DIR.parent
-DEFAULT_ROOT = EXPERIMENTS_DIR / "results_paper" / "benchmarks"
+sys.path.insert(0, str(EXPERIMENTS_DIR.parent))
+
+from result_paths import original_results  # noqa: E402
+
+DEFAULT_ROOT = original_results("regression") / "benchmarks"
 
 DIR_GP = "10_runs_logging_full_Gaussian"
 DIR_PE = "10_runs_logging_full_PE"
@@ -231,13 +236,28 @@ def _extract_meta(path: Path, model_root: Path) -> Dict[str, Any]:
 def _iter_result_jsons(model_root: Path) -> Iterable[Path]:
     if not model_root.exists():
         return
-    for path in model_root.rglob("*.json"):
-        p = str(path).lower()
-        if "trainer_analysis" in p or "gp_trainer_analysis" in p:
-            continue
-        if "backup" in path.parts:
-            continue
-        yield path
+    # Trainer plot folders have paths past the Windows 260-character limit.
+    # Skip them instead of walking in. The metrics JSON files sit above that folder.
+    skip = {"trainer_analysis", "backup", "plots"}
+
+    def _walk(folder: Path) -> Iterable[Path]:
+        try:
+            children = list(folder.iterdir())
+        except OSError:
+            return
+        for child in children:
+            if child.name.lower() in skip:
+                continue
+            try:
+                is_dir = child.is_dir()
+            except OSError:
+                continue
+            if is_dir:
+                yield from _walk(child)
+            elif child.suffix.lower() == ".json":
+                yield child
+
+    yield from _walk(model_root)
 
 
 def _section_for_model(model_id: str) -> str:

@@ -70,10 +70,27 @@ def iter_json_files(base_dir: Optional[Path], problems: Optional[set[str]]) -> I
     if base_dir is None or not base_dir.exists():
         return
     problems_lower = {p.lower() for p in problems} if problems else None
-    for path in base_dir.rglob("*.json"):
-        # Skip trainer-analysis dumps (no per-run gp_data/tabpfn_data metrics).
-        if "trainer_analysis" in path.parts:
-            continue
+    # Trainer plot folders have paths past the Windows 260-character limit.
+    skip = {"trainer_analysis", "backup", "plots"}
+
+    def _walk(folder: Path) -> Iterable[Path]:
+        try:
+            children = list(folder.iterdir())
+        except OSError:
+            return
+        for child in children:
+            if child.name.lower() in skip:
+                continue
+            try:
+                is_dir = child.is_dir()
+            except OSError:
+                continue
+            if is_dir:
+                yield from _walk(child)
+            elif child.suffix.lower() == ".json":
+                yield child
+
+    for path in _walk(base_dir):
         rel = path.relative_to(base_dir)
         if problems_lower:
             if not rel.parts:

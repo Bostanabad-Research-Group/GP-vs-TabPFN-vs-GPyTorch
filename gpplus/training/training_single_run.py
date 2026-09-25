@@ -547,6 +547,9 @@ class GPTrainerSingleProcess:
         """
         output = self.model(train_x)
         nll = -mll(output, train_y)  # for fallbacks and nll_kf
+        # Batched models (one GP per class) return one likelihood per batch.
+        if nll.dim() > 0:
+            nll = nll.sum()
 
         if self.loss_type == "nll":
             return nll

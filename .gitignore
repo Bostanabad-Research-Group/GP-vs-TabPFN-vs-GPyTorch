@@ -161,10 +161,18 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# New experiment runs. Archived paper outputs live in results_paper/.
-experiments_regression/results/*
-!experiments_regression/results/.gitkeep
-experiments_BO/results/*
-!experiments_BO/results/.gitkeep
-experiments_classification/results/*
-!experiments_classification/results/.gitkeep
+# New runs and comparison outputs from local testing.
+# The folders stay in git through .gitkeep. Archived paper outputs stay in *_original_results/.
+results/regression_results/regression_new_results/*
+!results/regression_results/regression_new_results/.gitkeep
+results/bo_results/bo_new_results/*
+!results/bo_results/bo_new_results/.gitkeep
+results/classification_results/classification_new_results/*
+!results/classification_results/classification_new_results/.gitkeep
+results/regression_results/regression_results_comparison/*
+!results/regression_results/regression_results_comparison/.gitkeep
+results/bo_results/bo_results_comparison/*
+!results/bo_results/bo_results_comparison/.gitkeep
+results/classification_results/classification_results_comparison/*
+!results/classification_results/classification_results_comparison/.gitkeep
+results/summary.md

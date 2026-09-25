@@ -1,7 +1,7 @@
 """Run the paper's regression experiments and write summary figures.
 
-New runs are saved under ``results/``. The archived paper runs stay in
-``results_paper/`` and are not overwritten.
+New runs are saved under ``results/regression_results/regression_new_results/``.
+The archived paper runs stay in ``regression_original_results/``.
 
 Plot the archived results (no training):
 
@@ -20,12 +20,17 @@ from __future__ import annotations
 
 import argparse
 import sys
+import traceback
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+REPO = HERE.parent
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(REPO))
 
-RESULTS = HERE / "results"
+from result_paths import new_results  # noqa: E402
+
+RESULTS = new_results("regression")
 
 # (problem key, input dimension, folder name)
 BENCHMARKS = [
@@ -82,6 +87,13 @@ def _parse() -> argparse.Namespace:
     parser.add_argument("--noise", nargs="*", type=float, default=[0.002, 0.08])
     parser.add_argument("--num-runs", type=int, default=10)
     parser.add_argument("--train-sizes", nargs="*", type=int, default=[5, 20])
+    parser.add_argument(
+        "--timeout-hours",
+        type=float,
+        default=12,
+        help="Stop one configuration if it runs longer than this, then continue.",
+    )
+    parser.add_argument("--job-file", default=None, help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -151,6 +163,127 @@ def _set_kernel(kind: str, dims: int, problem: str) -> None:
         defaults.SF_kernel = None
 
 
+def _protect(args, job: dict) -> None:
+    from experiment_guard import run_isolated
+
+    job = dict(job)
+    job["no_trainer_logs"] = bool(args.no_trainer_logs)
+    job["per_problem_plots"] = bool(args.per_problem_plots)
+    job["num_runs"] = args.num_runs
+    run_isolated(
+        Path(__file__).resolve(),
+        job,
+        timeout_s=float(args.timeout_hours) * 3600.0,
+        failures_path=RESULTS / "failures.jsonl",
+    )
+
+
+def execute_job(job: dict) -> None:
+    import defaults
+
+    if job.get("no_trainer_logs"):
+        defaults.TRAINER_INFO = False
+    if not job.get("per_problem_plots"):
+        _silence_inline_plots()
+    kind = job["kind"]
+    problem = job["problem"]
+    dims = int(job["dims"])
+    train_size = int(job["train_size"])
+    noise = float(job["noise"])
+    save = job["save_path"]
+    num_runs = int(job["num_runs"])
+    if kind == "gp":
+        _set_kernel(job["kernel_kind"], dims, problem)
+        _call_gp(
+            _gp_functions()[problem],
+            problem,
+            dims,
+            train_size,
+            noise,
+            save,
+            num_runs=num_runs,
+            loss_type=job["loss_type"],
+            kernel_kind=job["kernel_kind"],
+            logscale=bool(job.get("logscale")),
+        )
+        return
+    if kind == "gpytorch":
+        _call_gpytorch(
+            _gpytorch_functions()[problem],
+            problem,
+            dims,
+            train_size,
+            noise,
+            save,
+            num_runs=num_runs,
+            logscale=bool(job.get("logscale")),
+        )
+        return
+    if kind == "pfn":
+        defaults.PFN_VERSION = job["version"]
+        defaults.SF_kernel = None
+        kwargs = dict(
+            num_runs=num_runs,
+            num_test=5000,
+            train_size=train_size,
+            num_inits=0,
+            save_path=save,
+            noise_train=noise,
+            noise_test=noise,
+            run_models="pfn",
+        )
+        if problem in DIMENSION_ARG_PROBLEMS:
+            kwargs["dimensions"] = dims
+        _gp_functions()[problem](**kwargs)
+        return
+    if kind == "onedim":
+        from A22_regression_1D import regression_1D_GPvsPFN
+
+        regression_1D_GPvsPFN(
+            function_name=problem,
+            num_runs=num_runs,
+            train_size=20,
+            dimensions=1,
+            noise_train=0.0,
+            noise_test=0.0,
+            save_path=save,
+        )
+        return
+    if kind == "onedim_tuned":
+        from A22_tune_tabpfn_1d import eval_tabpfn_on_function, load_baseline_median, paper_tuned_config
+
+        base = load_baseline_median(problem)
+        eval_tabpfn_on_function(
+            problem,
+            paper_tuned_config(),
+            num_runs=num_runs,
+            save_path=Path(save),
+            plot=bool(job.get("per_problem_plots")),
+            baseline_gp_bundle=base["bundle"] if base else None,
+        )
+        return
+    raise ValueError(f"Unknown job kind {kind}")
+
+
+def _run_job_file(path: Path) -> None:
+    job = json_load(path)
+    try:
+        execute_job(job)
+    except Exception:
+        text = traceback.format_exc()
+        trace = job.get("trace_path")
+        if trace:
+            Path(trace).write_text(text, encoding="utf-8")
+        print(text, flush=True)
+        raise SystemExit(1) from None
+
+
+def json_load(path: Path) -> dict:
+    import json
+
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _selected(cases, problems):
     if not problems:
         return cases
@@ -197,7 +330,6 @@ def _call_gpytorch(fn, problem, dims, train_size, noise, save_path, *, num_runs,
 
 
 def _run_gp_family(args, *, logscale: bool) -> None:
-    fns = _gp_functions()
     cases = _selected(BENCHMARKS, args.problems)
     if logscale:
         cases = [case for case in cases if case[0] in LOGSCALE_PROBLEMS]
@@ -209,30 +341,30 @@ def _run_gp_family(args, *, logscale: bool) -> None:
             folder = GP_LOG_DIRS[model]
         root = RESULTS / ("logscale" if logscale else "benchmarks") / folder
         for problem, dims, sub in cases:
-            _set_kernel(kernel_kind, dims, problem)
-            fn = fns[problem]
             for train_size in args.train_sizes:
                 for noise in args.noise:
                     save = root / sub
-                    print(f"\n=== GP {model} {problem} Dx={dims} N={train_size}Dx noise={noise} log={logscale}")
-                    _call_gp(
-                        fn,
-                        problem,
-                        dims,
-                        train_size,
-                        noise,
-                        save,
-                        num_runs=args.num_runs,
-                        loss_type=loss_type,
-                        kernel_kind=kernel_kind,
-                        logscale=logscale,
+                    _protect(
+                        args,
+                        {
+                            "kind": "gp",
+                            "label": f"GP {model} {problem} Dx={dims} N={train_size}Dx noise={noise} log={logscale}",
+                            "model": model,
+                            "problem": problem,
+                            "dims": dims,
+                            "train_size": train_size,
+                            "noise": noise,
+                            "save_path": str(save),
+                            "loss_type": loss_type,
+                            "kernel_kind": kernel_kind,
+                            "logscale": logscale,
+                        },
                     )
 
 
 def _run_gpytorch(args, *, logscale: bool) -> None:
     if "gpytorch" not in args.models:
         return
-    fns = _gpytorch_functions()
     cases = _selected(BENCHMARKS, args.problems)
     if logscale:
         cases = [case for case in cases if case[0] in LOGSCALE_PROBLEMS]
@@ -241,72 +373,85 @@ def _run_gpytorch(args, *, logscale: bool) -> None:
     )
     root = RESULTS / ("logscale" if logscale else "benchmarks") / folder
     for problem, dims, sub in cases:
-        fn = fns[problem]
         for train_size in args.train_sizes:
             for noise in args.noise:
-                print(f"\n=== GPyTorch {problem} Dx={dims} N={train_size}Dx noise={noise} log={logscale}")
-                _call_gpytorch(
-                    fn,
-                    problem,
-                    dims,
-                    train_size,
-                    noise,
-                    root / sub,
-                    num_runs=args.num_runs,
-                    logscale=logscale,
+                _protect(
+                    args,
+                    {
+                        "kind": "gpytorch",
+                        "label": f"GPyTorch {problem} Dx={dims} N={train_size}Dx noise={noise} log={logscale}",
+                        "model": "gpytorch",
+                        "problem": problem,
+                        "dims": dims,
+                        "train_size": train_size,
+                        "noise": noise,
+                        "save_path": str(root / sub),
+                        "logscale": logscale,
+                    },
                 )
 
 
 def _run_pfn(args) -> None:
-    import defaults
-
-    fns = _gp_functions()
     cases = _selected(BENCHMARKS, args.problems)
     for model in args.models:
         if model not in PFN_MODELS:
             continue
         folder, version = PFN_MODELS[model]
-        defaults.PFN_VERSION = version
-        defaults.SF_kernel = None
         root = RESULTS / "benchmarks" / folder
         for problem, dims, sub in cases:
-            fn = fns[problem]
             for train_size in args.train_sizes:
                 for noise in args.noise:
-                    print(f"\n=== TabPFN {version} {problem} Dx={dims} N={train_size}Dx noise={noise}")
-                    kwargs = dict(
-                        num_runs=args.num_runs,
-                        num_test=5000,
-                        train_size=train_size,
-                        num_inits=0,
-                        save_path=str(root / sub),
-                        noise_train=noise,
-                        noise_test=noise,
-                        run_models="pfn",
+                    _protect(
+                        args,
+                        {
+                            "kind": "pfn",
+                            "label": f"TabPFN {version} {problem} Dx={dims} N={train_size}Dx noise={noise}",
+                            "model": model,
+                            "version": version,
+                            "problem": problem,
+                            "dims": dims,
+                            "train_size": train_size,
+                            "noise": noise,
+                            "save_path": str(root / sub),
+                        },
                     )
-                    if problem in DIMENSION_ARG_PROBLEMS:
-                        kwargs["dimensions"] = dims
-                    fn(**kwargs)
 
 
 def _run_onedim(args) -> None:
-    from A22_regression_1D import REGRESSION_1D_FUNCTIONS, regression_1D_GPvsPFN
+    from A22_regression_1D import REGRESSION_1D_FUNCTIONS
 
     names = PAPER_1D
     if args.problems:
         wanted = [p for p in args.problems if p in REGRESSION_1D_FUNCTIONS]
         names = tuple(wanted) if wanted else ()
     out = RESULTS / "onedim" / "A22_regression_1D"
+    tuned = RESULTS / "onedim" / "A22_regression_1D_tabpfn_tuned"
     for name in names:
-        print(f"\n=== 1D {name}")
-        regression_1D_GPvsPFN(
-            function_name=name,
-            num_runs=args.num_runs,
-            train_size=20,
-            dimensions=1,
-            noise_train=0.0,
-            noise_test=0.0,
-            save_path=str(out / name),
+        _protect(
+            args,
+            {
+                "kind": "onedim",
+                "label": f"1D {name}",
+                "model": "gpplus+tabpfn",
+                "problem": name,
+                "dims": 1,
+                "train_size": 20,
+                "noise": 0.0,
+                "save_path": str(out / name),
+            },
+        )
+        _protect(
+            args,
+            {
+                "kind": "onedim_tuned",
+                "label": f"1D tuned TabPFN {name}",
+                "model": "tabpfn_tuned",
+                "problem": name,
+                "dims": 1,
+                "train_size": 20,
+                "noise": 0.0,
+                "save_path": str(tuned / name),
+            },
         )
 
 
@@ -330,8 +475,14 @@ def rerun(args) -> None:
 
 def main() -> None:
     args = _parse()
+    if args.job_file:
+        _run_job_file(Path(args.job_file))
+        return
     if args.rerun:
         rerun(args)
+        from experiment_guard import write_failure_report
+
+        write_failure_report(RESULTS / "failures.jsonl")
         source = "results"
     else:
         source = args.source

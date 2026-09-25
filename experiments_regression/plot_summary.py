@@ -23,7 +23,11 @@ import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 
 HERE = Path(__file__).resolve().parent
+REPO = HERE.parent
 sys.path.insert(0, str(HERE / "experimental_utils"))
+sys.path.insert(0, str(REPO))
+
+from result_paths import new_results, original_results  # noqa: E402
 
 import IDETC_create_tables as tables  # noqa: E402
 import IDETC_plot_gpplus_comparison as cmp_plots  # noqa: E402
@@ -52,9 +56,7 @@ MODEL_ORDER = [
 
 
 def result_roots(source: str) -> tuple[Path, Path, Path]:
-    base = HERE / ("results_paper" if source == "paper" else "results")
-    if source == "paper":
-        return base / "benchmarks", base / "logscale", base / "onedim"
+    base = original_results("regression") if source == "paper" else new_results("regression")
     return base / "benchmarks", base / "logscale", base / "onedim"
 
 
@@ -232,9 +234,12 @@ def _logscale_figure(bench: Path, log_root: Path, summary: Path, per_problem: bo
     pe_log = _pick(log_root, "10_runs_logging_full_PE_logscale")
     loo_log = _pick(log_root, "10_runs_logging_full_Gaussian_LOO_logscale")
     gy_log = _pick(log_root, "10_runs_gpytorch_corrected_LBFGS_logscale")
-    if gp_log is None or "gpplus" not in dirs:
+    if "gpplus" not in dirs or not any((gp_log, pe_log, loo_log, gy_log)):
         print("Log-scale results not found; skipping that figure.")
         return
+    if gp_log is None:
+        print("GP+ Gaussian log-scale results are missing. Plotting the log-scale runs that exist.")
+        gp_log = Path("__missing_model__")
     missing = Path("__missing_model__")
     df = log_plots.collect_logscale_df(
         gp_dir=dirs["gpplus"],
@@ -314,7 +319,9 @@ def _logscale_figure(bench: Path, log_root: Path, summary: Path, per_problem: bo
 
 def write_summary(source: str = "paper", per_problem: bool = False) -> Path:
     bench, log_root, onedim = result_roots(source)
-    summary = (HERE / ("results_paper" if source == "paper" else "results")) / "summary"
+    summary = (
+        original_results("regression") if source == "paper" else new_results("regression")
+    ) / "summary"
     summary.mkdir(parents=True, exist_ok=True)
     dirs = benchmark_dirs(bench)
     if not dirs:

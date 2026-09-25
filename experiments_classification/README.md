@@ -4,7 +4,7 @@ These scripts reproduce Section 4.5 and the one-dimensional Dirichlet example in
 
 GP+ turns classification into regression with the Dirichlet targets of Milios et al. One latent GP is fit per class. The kernels share hyperparameters except for a class-specific noise term. Training uses Adam, which is the setting in the paper. TabPFN v2.0 and v2.5 are fit with their default classifiers. There is no separate GPyTorch training script in this folder. The Matérn kernel is the GPyTorch kernel, wrapped by GP+.
 
-The archived repository does not include the classification CSVs or the 1D figure. Those are created in `results/` when you rerun.
+The archived repository does not include the classification CSVs or the 1D figure. Those are created in `results/classification_results/classification_new_results/` when you rerun.
 
 ## Datasets
 
@@ -29,12 +29,12 @@ python run_all.py --rerun --problems stellar onedim
 
 Outputs:
 
-- `results/<dataset>/<dataset>_raw.csv` and `<dataset>_summary.csv`
-- `results/summary/classification_final.png` and `classification_grid.pdf`
-- `results/summary/classification_summary.md`
-- `results/onedim/onedim_example.png`, copied to `results/summary/classification_1d.png`
+- `results/classification_results/classification_new_results/<dataset>/<dataset>_raw.csv` and `<dataset>_summary.csv`
+- `results/classification_results/classification_new_results/summary/classification_final.png` and `classification_grid.pdf`
+- `results/classification_results/classification_new_results/summary/classification_summary.md`
+- `results/classification_results/classification_new_results/onedim/onedim_example.png`, copied to `summary/classification_1d.png`
 
-`--per-problem-plots` also writes one figure per dataset under `results/plots_per_dataset/` and one Markdown table per dataset under `results/summary/tables/`.
+`--per-problem-plots` also writes one figure per dataset under `classification_new_results/plots_per_dataset/` and one Markdown table per dataset under `classification_new_results/summary/tables/`.
 
 Plot again without training:
 
@@ -42,4 +42,4 @@ Plot again without training:
 python run_all.py --source results
 ```
 
-`results_paper/` is reserved for a future archive of these CSVs. Nothing in the current paper archive belongs in that folder yet, so a plot-only call looks in `results/`.
+`results/classification_results/classification_original_results/` is reserved for a future archive of these CSVs. Nothing in the current paper archive belongs in that folder yet, so a plot-only call looks in `classification_new_results/`.

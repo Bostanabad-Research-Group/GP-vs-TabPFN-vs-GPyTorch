@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -27,6 +28,10 @@ from plot_BO_IDETC import (
 )
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+
+from result_paths import new_results, original_results  # noqa: E402
+
 MODEL_FOLDERS = [
     ("GP+", "GP+"),
     ("PFN_V2.0", "PFN 2.0"),
@@ -35,7 +40,7 @@ MODEL_FOLDERS = [
 
 
 def _root(source: str) -> Path:
-    return HERE / ("results_paper" if source == "paper" else "results")
+    return original_results("bo") if source == "paper" else new_results("bo")
 
 
 def _models(root: Path) -> list[tuple[Path, str]]:

@@ -5,6 +5,7 @@
 
 import os
 import random
+import sys
 
 import gpytorch
 import matplotlib
@@ -45,13 +46,12 @@ CLASS_0_POINTS = [-0.65, -0.55, -0.45, -0.35, -0.25, 0.60, 0.72, 0.82, 0.92]
 # Either class is complete on its own since probabilities add to 1 for both
 PLOT_CLASS = 1
 
-OUTPUT_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..",
-    "results",
-    "onedim",
-    "onedim_example.png",
-)
+_REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _REPO not in sys.path:
+    sys.path.insert(0, _REPO)
+from result_paths import new_results
+
+OUTPUT_PATH = os.path.join(str(new_results("classification")), "onedim", "onedim_example.png")
 
 
 # Experiment settings
@@ -121,7 +121,6 @@ def train_gpc(X_train, y_train, alpha_eps, seed):
         num_epochs=ADAM["num_epochs"],
         num_inits=NUM_INITS,
         seed=seed,
-        dtype=DTYPE,
         stop_conditions=[],
     )
     results = trainer.train()
