@@ -13,8 +13,9 @@ These scripts reproduce Section 4.4. The surrogates are GP+ and TabPFN. The pape
 | `run_all.py` | Paper suite |
 | `plot_summary.py` | Eight-panel figure and the final-value table |
 | `plot_BO_IDETC.py` | The same eight-panel figure, used by `plot_summary.py` |
-| `results_paper/` | Archived high-noise runs (noise 0.08) for GP+, TabPFN v2.0, and TabPFN v2.5 |
-| `results/` | New runs |
+| `results/bo_results/bo_original_results/` | Archived high-noise runs (noise 0.08) for GP+, TabPFN v2.0, and TabPFN v2.5 |
+| `results/bo_results/bo_new_results/` | New runs |
+| `results/bo_results/bo_results_comparison/` | Archived final best against this run |
 
 ## Paper settings
 
@@ -36,7 +37,7 @@ Plot the archive:
 python run_all.py
 ```
 
-This writes `results_paper/summary/BO_final.png` and `results_paper/summary/bo_summary.md`.
+This writes `results/bo_results/bo_original_results/summary/BO_final.png` and `bo_summary.md`.
 
 Rerun GP+ on one problem:
 
@@ -52,4 +53,4 @@ python run_all.py --rerun --models pfn25 --noise 0.08
 
 `--per-problem-plots` writes one curve figure per problem under `summary/per_problem/` and one Markdown table per problem under `summary/tables/`.
 
-New files land in `results/GP+`, `results/PFN_V2.5`, or `results/PFN_V2.0`.
+New files land in `results/bo_results/bo_new_results/GP+`, `PFN_V2.5`, or `PFN_V2.0`.

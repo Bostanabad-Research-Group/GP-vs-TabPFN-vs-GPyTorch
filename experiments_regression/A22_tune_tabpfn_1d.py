@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import sys
 import time
 import warnings
 from pathlib import Path
@@ -40,8 +41,27 @@ from run_metadata import experiment_data_info, pfn_model_info
 
 warnings.filterwarnings("ignore")
 
-RESULTS_ROOT = Path("./results_1D/A22_regression_1D")
-TUNED_ROOT = Path("./results_1D/A22_regression_1D_tabpfn_tuned")
+_REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_REPO))
+from result_paths import new_results  # noqa: E402
+
+_ONEDIM = new_results("regression") / "onedim"
+RESULTS_ROOT = _ONEDIM / "A22_regression_1D"
+TUNED_ROOT = _ONEDIM / "A22_regression_1D_tabpfn_tuned"
+
+
+def paper_tuned_config() -> dict:
+    """TabPFN settings used for the tuned curves in the 1D figure."""
+    return dict(
+        name="small-samples_n16_T0.45",
+        n_estimators=16,
+        softmax_temperature=0.45,
+        average_before_softmax=False,
+        model_path=_ckpt_path("small-samples"),
+        checkpoint="small-samples",
+    )
+
+
 SCREEN_FUNCS = ("chirp", "discontinuity", "localized_bump", "damped_sine")
 CKPT = {
     "default": "tabpfn-v2.5-regressor-v2.5_default.ckpt",
@@ -338,19 +358,7 @@ def eval_tabpfn_on_function(
     keys = ["RRMSE", "NCRPS", "NIS_width", "NIS", "NIS_outside", "NLPD", "MAE"]
     med = _median_metrics(TabPFN_metrics, keys)
 
-    if plot and save_path is not None and all_runs_plot_data:
-        out_plot_dir = Path(save_path) / "plots" / "prediction_runs"
-        try:
-            save_1d_all_runs_gp_tabpfn_plot(
-                all_runs_plot_data,
-                x_test_1d,
-                out_plot_dir,
-                title=title,
-                y_true_test=y_true_1d,
-                file_suffix="tuned",
-            )
-        except Exception as e:
-            print(f"all-runs plot failed: {e}")
+    if save_path is not None and all_runs_plot_data:
         try:
             persist_predictions_npz(
                 Path(save_path),
@@ -364,6 +372,19 @@ def eval_tabpfn_on_function(
             )
         except Exception as e:
             print(f"npz save failed: {e}")
+    if plot and save_path is not None and all_runs_plot_data:
+        out_plot_dir = Path(save_path) / "plots" / "prediction_runs"
+        try:
+            save_1d_all_runs_gp_tabpfn_plot(
+                all_runs_plot_data,
+                x_test_1d,
+                out_plot_dir,
+                title=title,
+                y_true_test=y_true_1d,
+                file_suffix="tuned",
+            )
+        except Exception as e:
+            print(f"all-runs plot failed: {e}")
 
     if save_path is not None:
         save_path = Path(save_path)

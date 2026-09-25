@@ -226,7 +226,7 @@ def main() -> None:
         "--results-dir",
         type=Path,
         default=None,
-        help="Root results directory when not using --folder (default: experiments_BO/results). Ignored if --folder is set.",
+        help="Root results directory when not using --folder (default: results/bo_results/bo_new_results). Ignored if --folder is set.",
     )
     parser.add_argument(
         "--dry-run",
@@ -259,7 +259,12 @@ def main() -> None:
 
     # Walk from root
     if args.results_dir is None:
-        args.results_dir = script_dir / "results"
+        repo = script_dir.parent
+        if str(repo) not in sys.path:
+            sys.path.insert(0, str(repo))
+        from result_paths import new_results
+
+        args.results_dir = new_results("bo")
     args.results_dir = args.results_dir.resolve()
     if not args.results_dir.exists():
         print(f"Results dir does not exist: {args.results_dir}", file=sys.stderr)

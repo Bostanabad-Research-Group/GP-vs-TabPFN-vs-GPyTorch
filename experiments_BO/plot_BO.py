@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -26,7 +27,11 @@ import numpy as np
 
 # Paths (overridden by CLI or DEFAULT_PATHS when set)
 SCRIPT_DIR = Path(__file__).resolve().parent
-OUT_DIR = SCRIPT_DIR / "results_BO" / "BO_plots"
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+
+from result_paths import comparison_dir  # noqa: E402
+
+OUT_DIR = comparison_dir("bo") / "curves"
 
 # Custom base colors for better distinguishability
 PLOT_COLORS = ["#42A5F5", "#E53935", "#43A047", "#9C27B0"]  # blue, red, green, purple

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -31,13 +32,17 @@ from plot_BO import (
 )
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-OUT_DIR = SCRIPT_DIR / "results_paper" / "summary"
+sys.path.insert(0, str(SCRIPT_DIR.parent))
 
-# Paper models. Paths are relative to experiments_BO/.
-DEFAULT_PATHS: list[tuple[str, str]] = [
-    ("results_paper/GP+", "GP+"),
-    ("results_paper/PFN_V2.0", "PFN 2.0"),
-    ("results_paper/PFN_V2.5", "PFN 2.5"),
+from result_paths import original_results  # noqa: E402
+
+OUT_DIR = original_results("bo") / "summary"
+
+# Paper models.
+DEFAULT_PATHS: list[tuple[Path, str]] = [
+    (original_results("bo") / "GP+", "GP+"),
+    (original_results("bo") / "PFN_V2.0", "PFN 2.0"),
+    (original_results("bo") / "PFN_V2.5", "PFN 2.5"),
 ]
 # 8 subplots in order: (folder, dim_key, subtitle)
 # Desired order: Buckling, Borehole, Wing, Ackley 20D, Griewank 20D, Zakharov 20D, Ackley 40D, Dixon-Price 40D
@@ -443,8 +448,7 @@ def plot_idetc_figures(
 
 
 def main() -> None:
-    root = SCRIPT_DIR
-    models = [(root / p, label) for p, label in DEFAULT_PATHS]
+    models = [(path, label) for path, label in DEFAULT_PATHS]
     plot_idetc_figures(models, use_clean_y=False)  # Noisy y
     plot_idetc_figures(models, use_clean_y=True)   # Clean y
     plot_idetc_figures(models, use_clean_y=True, include_yhat=True)  # y_hat only

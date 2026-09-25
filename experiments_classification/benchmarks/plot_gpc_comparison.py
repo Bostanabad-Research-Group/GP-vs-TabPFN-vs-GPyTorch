@@ -2,6 +2,7 @@
 # Run after the run scripts
 
 import os
+import sys
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -10,7 +11,12 @@ import pandas as pd
 # Non-interactive backend: these scripts only ever write files.
 matplotlib.use("Agg")
 
-_RESULTS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "results"))
+_REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _REPO not in sys.path:
+    sys.path.insert(0, _REPO)
+from result_paths import new_results
+
+_RESULTS = str(new_results("classification"))
 
 # Missing files are skipped
 SUMMARY_CSVS = [

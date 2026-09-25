@@ -1,8 +1,18 @@
 # GP+ vs TabPFN vs GPyTorch
 
-This repository reproduces the experiments in [On the Brittleness of Maximum Likelihood Estimation for Gaussian Process Hyperparameter Optimization](https://arxiv.org/abs/2608.13793).
+This repository reproduces the longer paper:
 
-The study trains Gaussian processes with maximum likelihood and compares them with TabPFN v2.0 and v2.5. The GP baselines are:
+**On the Brittleness of Maximum Likelihood Estimation for Gaussian Process Hyperparameter Optimization.** Tyler R. Johnson, Kian Ben-Jacob, Christopher P. Muller, and Ramin Bostanabad. arXiv:2608.13793, 13 August 2026. [arxiv.org/abs/2608.13793](https://arxiv.org/abs/2608.13793)
+
+That paper keeps the regression benchmarks and adds the studies already stored in `results/regression_results/regression_original_results/`: the five 1D regression examples, including the tuned TabPFN overlay, and the log-scale target study on Buckling and Zakharov. It also adds Bayesian optimization and classification. A full rerun includes those 1D and log-scale fits. It does not stop after the benchmark table.
+
+The earlier paper is:
+
+**On the Uncertainty Quantification Ability of Tabular Foundation Models.** Tyler R. Johnson, Kian Ben-Jacob, Nima Negarandeh, Oriol Vendrell-Gallart, and Ramin Bostanabad. arXiv:2606.01427, and IEEE Computing in Science & Engineering, 10 June 2026, [doi.org/10.1109/MCSE.2026.3701626](https://doi.org/10.1109/MCSE.2026.3701626). [arxiv.org/abs/2606.01427](https://arxiv.org/abs/2606.01427)
+
+That version compares default GP+ with TabPFN v2.5 on regression, including a smaller set of 1D examples. It does not include the log-scale target study, Bayesian optimization, or classification. The code for that paper is [github.com/kianswarehouse/GPvsPFN](https://github.com/kianswarehouse/GPvsPFN).
+
+The brittleness study trains Gaussian processes with maximum likelihood and compares them with TabPFN v2.0 and v2.5. The GP baselines are:
 
 - **GP+**, this repository's library (`gpplus/`). It uses a log-scale kernel parameterization, a soft clamp on hyperparameters, and 16 random restarts.
 - **GPyTorch**, used with its own training loop on the regression benchmarks. Regression uses L-BFGS. Classification uses Adam.
@@ -15,7 +25,7 @@ The three experiment suites match the paper sections:
 | `experiments_BO/` | 4.4 | Expected-improvement Bayesian optimization |
 | `experiments_classification/` | 4.5 and the 1D Dirichlet example | Four classification datasets |
 
-Published outputs are in each suite's `results_paper/` folder. A new run writes to the adjacent `results/` folder, so it does not overwrite the paper results.
+All outputs live under `results/`. Each suite has three folders: the archived paper run (`*_original_results`), a new run (`*_new_results`), and the comparison (`*_results_comparison`). `results/summary.md` is the short report.
 
 ## Setup
 
@@ -60,7 +70,7 @@ GPs run on CPU. TabPFN is meant to run on a GPU. If CUDA is not available, TabPF
 
 ## Rebuild the paper figures
 
-From the repository root, this does not train anything. It reads `results_paper/` and writes summary figures and tables next to those results.
+From the repository root, this does not train anything. It reads each suite's `*_original_results` folder and writes summary figures and tables there.
 
 ```bash
 python run_all_experiments.py
@@ -68,12 +78,12 @@ python run_all_experiments.py
 
 You get these combined figures from the archive:
 
-- `experiments_regression/results_paper/summary/regression_final.png` (RRMSE for every regression benchmark; the PDF also has NIS and NCRPS)
-- `experiments_regression/results_paper/summary/regression_1d_final.png`
-- `experiments_regression/results_paper/summary/regression_logscale_final.png`
-- `experiments_BO/results_paper/summary/BO_final.png`
+- `results/regression_results/regression_original_results/summary/regression_final.png` (RRMSE for every regression benchmark; the PDF also has NIS and NCRPS)
+- `results/regression_results/regression_original_results/summary/regression_1d_final.png`
+- `results/regression_results/regression_original_results/summary/regression_logscale_final.png`
+- `results/bo_results/bo_original_results/summary/BO_final.png`
 
-Classification has no archived CSVs in this repository, so that figure appears only after a rerun (see below).
+The paper's classification results are currently missing from `results/classification_results/classification_original_results/`. They should be added soon. Until then, the classification figure appears only after a rerun.
 
 Each summary folder also contains a table in Markdown, CSV, and, for regression, LaTeX. The regression table is the same layout as Table A1 in the paper: median ± standard deviation of RRMSE and NIS.
 
@@ -83,11 +93,11 @@ Add per-problem figures when you want them. They are off by default because they
 python run_all_experiments.py --per-problem-plots
 ```
 
-Those files go in `results_paper/summary/per_problem/` and `results_paper/summary/tables/` when you are plotting the archive. After a rerun they go in `results/summary/` instead. Classification writes its per-dataset figures under `experiments_classification/results/plots_per_dataset/`.
+Those files go in `*_original_results/summary/per_problem/` and `*_original_results/summary/tables/` when you are plotting the archive. After a rerun they go in `*_new_results/summary/` instead. Classification writes its per-dataset figures under `results/classification_results/classification_new_results/plots_per_dataset/`.
 
 ## Rerun experiments
 
-Training always writes to `results/`, never to `results_paper/`.
+Training always writes to `*_new_results/`, never to `*_original_results/`.
 
 ```bash
 python run_all_experiments.py --rerun --suite regression --problems wing --models gpplus
@@ -101,7 +111,7 @@ After a rerun, the figures are built from `results/` rather than from the archiv
 python run_all_experiments.py --suite regression --source results
 ```
 
-`--suite all --rerun` repeats the full paper. That is on the order of the 3,170 fits reported in the paper. Use `--problems` and `--models` to run a slice.
+`--suite all --rerun` repeats the full paper. That is on the order of the 3,170 fits reported in the paper. Use `--problems` and `--models` to run a slice. A configuration that errors or exceeds `--timeout-hours` (12 by default) is written to that suite's `*_new_results/failures.md` and the runner moves on. `python compare_to_paper.py` writes `results/summary.md` and the files in each `*_results_comparison` folder. Finished result files are left in place and are not repeated. A file counts as finished only when its dimension matches the job, so Ackley 20D does not stand in for Ackley 40D.
 
 Model names:
 
@@ -132,9 +142,11 @@ Regression benchmarks, 10 repeats, 5,000 test points, noise levels 0.002 and 0.0
 | Dixon-Price | 40 |
 | Rosenbrock | 80 |
 
-Buckling keeps the mixed-variable kernel in every GP+ variant. The power-exponential switch applies to the other problems. The log-scale study refits Buckling and Zakharov after a log transform of the response. Metrics are reported on the original scale.
+Buckling keeps the mixed-variable kernel in every GP+ variant. The power-exponential switch applies to the other problems. The log-scale study refits Buckling and Zakharov after a log transform of the response, for GP+, GP+ (PE), GP+ (LOO), and GPyTorch. Metrics are reported on the original scale. TabPFN is not refit on the log scale. The main text of the brittleness paper shows the Buckling GP+ and GPyTorch comparison. The PE, LOO, and Zakharov log-scale fits are in this repository.
 
-The 1D regression figure uses five noise-free problems with 20 training points: discontinuous sine, triangle wave, chirp, localized bump, and damped sine. The equations are in `experiments_regression/A22_regression_1D_reference_equations.py`.
+The 1D regression figure uses five noise-free problems with 20 training points: discontinuous sine, triangle wave, chirp, localized bump, and damped sine. The equations are in `experiments_regression/A22_regression_1D_reference_equations.py`. The tuned TabPFN overlay uses the small-samples checkpoint, 16 estimators, and softmax temperature 0.45. A full regression rerun writes both the default 1D curves and that tuned overlay.
+
+`--suite regression --rerun` runs benchmarks, then the log-scale study, then both 1D fits, as long as `--models` still includes `gpplus`, `pe`, `loo`, and `gpytorch`. Passing a shorter model list leaves those log-scale fits out.
 
 Bayesian optimization uses the same problems except Rosenbrock. Each trial starts from \(N_0 = 5 D_x\) Sobol points, then takes at most 30 expected-improvement steps and stops after 10 iterations without improvement. GP+ maximizes EI with L-BFGS from 64 starts. TabPFN scores EI on 5,000 Sobol candidates. The archived runs, and Figure 8 in the paper, use noise 0.08. The runner can also do noise 0.002.
 
@@ -146,6 +158,6 @@ Classification uses Electrical Grid Stability, Truss 6D, Stellar (SDSS17), and S
 
 `docs/` is the older manual for the GP+ library. Its install page says `pip install gpplus`. Do not follow that for these experiments. That command can install a different GP+ than the copy in this folder. Use the setup above.
 
-## Later comparison
+## Comparison
 
-`results/` and `results_paper/` use the same folder layout on purpose. A later script can pair those trees and report where a new run disagrees with the paper. That script is not part of this repository yet.
+`python compare_to_paper.py` pairs `*_original_results` with `*_new_results`. The report is `results/summary.md`. Regression and Bayesian optimization also get a table and a figure in their `*_results_comparison` folder.

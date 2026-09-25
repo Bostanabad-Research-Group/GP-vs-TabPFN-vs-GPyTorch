@@ -17,16 +17,21 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-from experimental_utils.a22_results_io import load_predictions_npz
+_REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_REPO))
 
-RESULTS_ROOT = Path(__file__).resolve().parent / "results_paper" / "onedim" / "A22_regression_1D"
-TUNED_ROOT = Path(__file__).resolve().parent / "results_paper" / "onedim" / "A22_regression_1D_tabpfn_tuned"
+from experimental_utils.a22_results_io import load_predictions_npz
+from result_paths import original_results
+
+RESULTS_ROOT = original_results("regression") / "onedim" / "A22_regression_1D"
+TUNED_ROOT = original_results("regression") / "onedim" / "A22_regression_1D_tabpfn_tuned"
 DEFAULT_OUT = RESULTS_ROOT / "1D_regression_figure"
 DEFAULT_OUT_TUNED = TUNED_ROOT / "1D_regression_figure_tuned"
 

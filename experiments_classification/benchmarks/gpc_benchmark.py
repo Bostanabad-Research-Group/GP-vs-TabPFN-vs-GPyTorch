@@ -6,6 +6,7 @@
 import itertools
 import os
 import random
+import sys
 import time
 import traceback
 
@@ -36,8 +37,13 @@ except ImportError as _e:
 
 
 def default_output_dir(name):
-    """New runs go under experiments_classification/results/<name>/."""
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "results", name))
+    """New runs go under results/classification_results/classification_new_results/<name>/."""
+    repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    if repo not in sys.path:
+        sys.path.insert(0, repo)
+    from result_paths import new_results
+
+    return os.path.join(str(new_results("classification")), name)
 
 
 DTYPE = torch.float64
@@ -251,7 +257,6 @@ def run_gp(X_train_pool, y_train_pool, X_test, y_test, input_dim,
         "num_epochs": adam["num_epochs"],
         "num_inits": num_inits,
         "seed": seed,
-        "dtype": DTYPE,
         "stop_conditions": [],
     }
 

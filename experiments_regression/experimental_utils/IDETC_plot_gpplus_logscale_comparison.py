@@ -45,6 +45,9 @@ except ImportError:
 SCRIPT_DIR = Path(__file__).resolve().parent
 EXPERIMENTS_DIR = SCRIPT_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
+sys.path.insert(0, str(EXPERIMENTS_DIR.parent))
+
+from result_paths import original_results  # noqa: E402
 
 from plot_violin_metrics import (  # noqa: E402
     collect_per_run_rows,
@@ -52,8 +55,8 @@ from plot_violin_metrics import (  # noqa: E402
     remove_outliers_iqr,
 )
 
-DEFAULT_ROOT = EXPERIMENTS_DIR / "results_paper" / "logscale"
-BENCHMARK_ROOT = EXPERIMENTS_DIR / "results_paper" / "benchmarks"
+DEFAULT_ROOT = original_results("regression") / "logscale"
+BENCHMARK_ROOT = original_results("regression") / "benchmarks"
 DEFAULT_PROBLEMS = ("zakharov", "buckling")
 
 # Untransformed runs live next to the other benchmarks. Log-scale runs live here.
