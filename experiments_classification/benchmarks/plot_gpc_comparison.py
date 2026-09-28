@@ -101,6 +101,40 @@ MARKERS = ["^", "o", "s", "P", "X", "*", "d"]
 LINESTYLES = ["-", "--", "-.", ":"]
 
 
+# Archived summaries use one model string. New runs split that into model and kernel.
+ARCHIVE_MODELS = {
+    "GP+ GPClassifier (RBF ARD)": ("GP+", "gaussian"),
+    "GP+ GPClassifier (PowerExp ARD)": ("GP+", "powerexp"),
+    "GP+ GPClassifier (Matern ARD)": ("GP+", "matern_0.5"),
+    "TabPFN Classifier (v2 compatibility)": ("TabPFN v2.0", ""),
+    "TabPFN Classifier (v2.5 default)": ("TabPFN v2.5", ""),
+}
+
+
+def normalize_summary(df):
+    """Return model and kernel columns in the new-run schema."""
+    out = df.copy()
+    if "kernel" not in out.columns:
+        out["kernel"] = pd.NA
+    models = []
+    kernels = []
+    for model, kernel in zip(out["model"], out["kernel"]):
+        text = "" if pd.isna(model) else str(model)
+        if text in ARCHIVE_MODELS:
+            model, kernel = ARCHIVE_MODELS[text]
+        elif text.startswith("TabPFN") and "2.5" in text:
+            model, kernel = "TabPFN v2.5", ""
+        elif text.startswith("TabPFN"):
+            model, kernel = "TabPFN v2.0", ""
+        elif pd.isna(kernel):
+            kernel = ""
+        models.append(model)
+        kernels.append("" if pd.isna(kernel) else str(kernel))
+    out["model"] = models
+    out["kernel"] = kernels
+    return out
+
+
 def load_summary(path, dataset):
     if not os.path.exists(path):
         print(f"[skip] {dataset}: {path} not found")
@@ -109,6 +143,7 @@ def load_summary(path, dataset):
     if df.empty:
         print(f"[skip] {dataset}: {path} is empty")
         return None
+    df = normalize_summary(df)
     for col in CONFIG_COLUMNS:
         if col not in df.columns:
             df[col] = None

@@ -4,7 +4,13 @@ These scripts reproduce Section 4.5 and the one-dimensional Dirichlet example in
 
 GP+ turns classification into regression with the Dirichlet targets of Milios et al. One latent GP is fit per class. The kernels share hyperparameters except for a class-specific noise term. Training uses Adam, which is the setting in the paper. TabPFN v2.0 and v2.5 are fit with their default classifiers. There is no separate GPyTorch training script in this folder. The Matérn kernel is the GPyTorch kernel, wrapped by GP+.
 
-The archived repository does not include the classification CSVs or the 1D figure. Those are created in `results/classification_results/classification_new_results/` when you rerun.
+The archive in `results/classification_results/classification_original_results/` is a completed rerun kept as the baseline. The paper's classification tables were not available. It uses the same folders as a new run:
+
+- `<dataset>/<dataset>_raw.csv` and `<dataset>_summary.csv` for Electrical Grid, Truss 6D, Stellar, and Steel Plates
+- `onedim/onedim_example.csv` and `onedim_example.png`
+- `summary/classification_final.png`, `classification_1d.png`, `classification_grid.pdf`, and `classification_summary.md`
+
+A rerun writes to `classification_new_results/` and does not change the archive.
 
 ## Datasets
 
@@ -32,7 +38,7 @@ Outputs:
 - `results/classification_results/classification_new_results/<dataset>/<dataset>_raw.csv` and `<dataset>_summary.csv`
 - `results/classification_results/classification_new_results/summary/classification_final.png` and `classification_grid.pdf`
 - `results/classification_results/classification_new_results/summary/classification_summary.md`
-- `results/classification_results/classification_new_results/onedim/onedim_example.png`, copied to `summary/classification_1d.png`
+- `results/classification_results/classification_new_results/onedim/onedim_example.csv` (class probabilities and the 95% interval on the prediction grid) and `onedim_example.png`, copied to `summary/classification_1d.png`
 
 `--per-problem-plots` also writes one figure per dataset under `classification_new_results/plots_per_dataset/` and one Markdown table per dataset under `classification_new_results/summary/tables/`.
 
@@ -42,4 +48,10 @@ Plot again without training:
 python run_all.py --source results
 ```
 
-`results/classification_results/classification_original_results/` is reserved for a future archive of these CSVs. Nothing in the current paper archive belongs in that folder yet, so a plot-only call looks in `classification_new_results/`.
+`python compare_to_paper.py` from the repository root writes:
+
+- `results/classification_results/classification_results_comparison/comparison.csv` and `comparison.md`
+- `comparison.png`, with accuracy, ECE, and training negative log likelihood. Solid lines are the archive. Dashed lines are the new run.
+- `onedim_comparison.csv`, the pointwise difference in \(P(y=1)\) when both runs have `onedim/onedim_example.csv`
+
+Plot the archive or the new run on its own with `python run_all.py --source paper` or `python run_all.py --source results`.

@@ -1,13 +1,14 @@
 # 1D binary classification: the effect of alpha_epsilon
 # Fits GP+ at several alpha_epsilon values and plots the posterior class
 # probability for each, alongside TabPFN v2.5 and v2.0 on the same data
-# Produces one figure
+# Produces one figure and a CSV of the plotted curves
 
 import os
 import random
 import sys
 
 import gpytorch
+import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -52,6 +53,7 @@ if _REPO not in sys.path:
 from result_paths import new_results
 
 OUTPUT_PATH = os.path.join(str(new_results("classification")), "onedim", "onedim_example.png")
+CURVE_PATH = os.path.join(str(new_results("classification")), "onedim", "onedim_example.csv")
 
 
 # Experiment settings
@@ -235,6 +237,48 @@ def _panel_label(index, text):
     return f"({chr(ord('a') + index)}) {text}"
 
 
+def _curve_rows(x_grid, gp_results, gp_meta, tabpfn_results):
+    rows = []
+    for alpha_eps in ALPHA_VALUES:
+        curves = gp_results[alpha_eps]
+        meta = gp_meta[alpha_eps]
+        mu, lb, ub = curves["mu"], curves["lb"], curves["ub"]
+        for i, x in enumerate(x_grid):
+            rows.append({
+                "model": "GP+",
+                "alpha_epsilon": alpha_eps,
+                "x": float(x),
+                "prob_class_0": float(mu[i, 0]),
+                "prob_class_1": float(mu[i, 1]),
+                "lower_class_1": float(lb[i, 1]),
+                "upper_class_1": float(ub[i, 1]),
+                "best_loss": meta["loss"],
+                "best_seed": meta["seed"],
+            })
+    names = {"v25": "TabPFN v2.5", "v2": "TabPFN v2.0"}
+    for vkey, probs in tabpfn_results.items():
+        for i, x in enumerate(x_grid):
+            rows.append({
+                "model": names[vkey],
+                "alpha_epsilon": pd.NA,
+                "x": float(x),
+                "prob_class_0": float(probs[i, 0]),
+                "prob_class_1": float(probs[i, 1]),
+                "lower_class_1": pd.NA,
+                "upper_class_1": pd.NA,
+                "best_loss": pd.NA,
+                "best_seed": pd.NA,
+            })
+    return pd.DataFrame(rows)
+
+
+def write_curves(path, x_grid, gp_results, gp_meta, tabpfn_results):
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    frame = _curve_rows(x_grid, gp_results, gp_meta, tabpfn_results)
+    frame.to_csv(path, index=False)
+    return path
+
+
 def plot_figure(gp_results, tabpfn_results, X_train, y_train, x_grid, out_path):
     plt.rcParams.update({
         "font.family": "sans-serif",
@@ -301,6 +345,7 @@ def main():
           f"{len(SEEDS) * NUM_INITS} optimizations per alpha\n")
 
     gp_results = {}
+    gp_meta = {}
     for alpha_eps in ALPHA_VALUES:
         print(f"alpha_epsilon={alpha_eps}")
         best_model, best_loss, best_seed = None, float("inf"), None
@@ -319,6 +364,7 @@ def main():
 
         mu, lb, ub = predict_with_bands(best_model, x_grid)
         gp_results[alpha_eps] = {"mu": mu, "lb": lb, "ub": ub}
+        gp_meta[alpha_eps] = {"loss": best_loss, "seed": best_seed}
         print()
 
     tabpfn_results = {}
@@ -332,8 +378,10 @@ def main():
             drift = float(np.abs(stacked - stacked[0]).max())
             print(f"done (max deviation across seeds: {drift:.2e})")
 
+    curve_path = write_curves(CURVE_PATH, x_grid, gp_results, gp_meta, tabpfn_results)
     plot_figure(gp_results, tabpfn_results, X_train, y_train, x_grid, OUTPUT_PATH)
-    print(f"\nFigure saved to {OUTPUT_PATH}")
+    print(f"\nCurves saved to {curve_path}")
+    print(f"Figure saved to {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

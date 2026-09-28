@@ -1,9 +1,10 @@
 """Run the paper's classification experiments.
 
 New runs go to ``results/classification_results/classification_new_results/<dataset>/``.
-There is no archived classification CSV in this repository, so plotting needs a run first.
+The archive in ``classification_original_results/`` uses the same folders as a new run.
 
     python run_all.py --rerun
+    python run_all.py --source paper
     python run_all.py --rerun --problems stellar --no-plot
 """
 
@@ -123,12 +124,11 @@ def _run_dataset(name: str) -> None:
 
 
 def _write_tables(root: Path, per_problem: bool) -> None:
+    from plot_gpc_comparison import normalize_summary
+
     frames = []
-    for name in ("electrical_grid", "truss_6d", "stellar", "steel_plates"):
-        path = root / name / f"{name}_summary.csv"
-        if not path.exists():
-            continue
-        frame = pd.read_csv(path)
+    for path, name in _summary_csvs(root):
+        frame = normalize_summary(pd.read_csv(path))
         frame.insert(0, "dataset", name)
         frames.append(frame)
     if not frames:
@@ -177,24 +177,35 @@ def _markdown(frame: pd.DataFrame, path: Path) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _summary_csvs(root: Path) -> list[tuple[str, str]]:
+    """Archive files sit next to the README. New runs use one folder per dataset."""
+    found = []
+    for name in ("electrical_grid", "truss_6d", "stellar", "steel_plates"):
+        nested = root / name / f"{name}_summary.csv"
+        flat = sorted(root.glob(f"{name}_summary*.csv"))
+        path = nested if nested.is_file() else (flat[0] if flat else None)
+        if path is not None:
+            found.append((str(path), name))
+    return found
+
+
 def _plot(source: str, per_problem: bool) -> None:
     root = ORIGINAL_RESULTS if source == "paper" else NEW_RESULTS
-    archived = list(ORIGINAL_RESULTS.glob("*/*_summary.csv")) if ORIGINAL_RESULTS.is_dir() else []
-    if source == "paper" and not archived:
+    summaries = _summary_csvs(root)
+    if source == "paper" and not summaries:
         print(
-            "Classification CSVs were not part of the archived paper results. "
-            "Looking in classification_new_results/ instead. Run with --rerun to create them."
+            "No classification summaries in classification_original_results/. "
+            "Looking in classification_new_results/ instead."
         )
         root = NEW_RESULTS
+        summaries = _summary_csvs(root)
+    if not summaries:
+        print(f"No classification summary CSVs under {root}")
+        return
     os.chdir(BENCH)
     import plot_gpc_comparison as plotter
 
-    plotter.SUMMARY_CSVS = [
-        (str(root / "electrical_grid" / "electrical_grid_summary.csv"), "electrical_grid"),
-        (str(root / "truss_6d" / "truss_6d_summary.csv"), "truss_6d"),
-        (str(root / "stellar" / "stellar_summary.csv"), "stellar"),
-        (str(root / "steel_plates" / "steel_plates_summary.csv"), "steel_plates"),
-    ]
+    plotter.SUMMARY_CSVS = summaries
     plotter.OUTPUT_DIR = str(root / "plots_per_dataset")
     plotter.PAPER_DIR = str(root / "summary")
     plotter.WRITE_PER_DATASET = per_problem

@@ -25,7 +25,7 @@ The three experiment suites match the paper sections:
 | `experiments_BO/` | 4.4 | Expected-improvement Bayesian optimization |
 | `experiments_classification/` | 4.5 and the 1D Dirichlet example | Four classification datasets |
 
-All outputs live under `results/`. Each suite has three folders: the archived paper run (`*_original_results`), a new run (`*_new_results`), and the comparison (`*_results_comparison`). `results/summary.md` is the short report.
+All outputs live under `results/`. Each suite has three folders: the archived run (`*_original_results`), a new run (`*_new_results`), and the comparison (`*_results_comparison`). `results/summary.md` is the short report. Regression and Bayesian optimization archives are the paper runs. The classification archive is a completed rerun kept as the baseline, in the same folders as a new run, because the paper's classification tables were not available.
 
 ## Setup
 
@@ -82,8 +82,8 @@ You get these combined figures from the archive:
 - `results/regression_results/regression_original_results/summary/regression_1d_final.png`
 - `results/regression_results/regression_original_results/summary/regression_logscale_final.png`
 - `results/bo_results/bo_original_results/summary/BO_final.png`
-
-The paper's classification results are currently missing from `results/classification_results/classification_original_results/`. They should be added soon. Until then, the classification figure appears only after a rerun.
+- `results/classification_results/classification_original_results/summary/classification_final.png`
+- `results/classification_results/classification_original_results/summary/classification_1d.png`
 
 Each summary folder also contains a table in Markdown, CSV, and, for regression, LaTeX. The regression table is the same layout as Table A1 in the paper: median ± standard deviation of RRMSE and NIS.
 
@@ -93,7 +93,7 @@ Add per-problem figures when you want them. They are off by default because they
 python run_all_experiments.py --per-problem-plots
 ```
 
-Those files go in `*_original_results/summary/per_problem/` and `*_original_results/summary/tables/` when you are plotting the archive. After a rerun they go in `*_new_results/summary/` instead. Classification writes its per-dataset figures under `results/classification_results/classification_new_results/plots_per_dataset/`.
+Those files go in `*_original_results/summary/per_problem/` and `*_original_results/summary/tables/` when you are plotting the archive. After a rerun they go in `*_new_results/summary/` instead. Classification writes one figure per dataset under `plots_per_dataset/` in the folder being plotted.
 
 ## Rerun experiments
 
@@ -150,7 +150,7 @@ The 1D regression figure uses five noise-free problems with 20 training points: 
 
 Bayesian optimization uses the same problems except Rosenbrock. Each trial starts from \(N_0 = 5 D_x\) Sobol points, then takes at most 30 expected-improvement steps and stops after 10 iterations without improvement. GP+ maximizes EI with L-BFGS from 64 starts. TabPFN scores EI on 5,000 Sobol candidates. The archived runs, and Figure 8 in the paper, use noise 0.08. The runner can also do noise 0.002.
 
-Classification uses Electrical Grid Stability, Truss 6D, Stellar (SDSS17), and Steel Plates Faults. GP+ fits a Dirichlet classifier with Gaussian, power-exponential, and Matérn-1/2 kernels, Adam, and 10 seeds. TabPFN v2.0 and v2.5 are the baselines. Training sizes are in the classification README. The 1D classification figure sweeps the Dirichlet concentration \(\alpha_\epsilon\).
+Classification uses Electrical Grid Stability, Truss 6D, Stellar (SDSS17), and Steel Plates Faults. GP+ fits a Dirichlet classifier with Gaussian, power-exponential, and Matérn-1/2 kernels, Adam, and 10 seeds. TabPFN v2.0 and v2.5 are the baselines. Training sizes are in the classification README. The 1D example sweeps the Dirichlet concentration \(\alpha_\epsilon\) and saves both the figure and `onedim/onedim_example.csv`, the class probabilities on the prediction grid. The archive in `classification_original_results/` has the same folders: one directory per dataset, `onedim/`, and `summary/`.
 
 ## GP+ library
 
@@ -160,4 +160,6 @@ Classification uses Electrical Grid Stability, Truss 6D, Stellar (SDSS17), and S
 
 ## Comparison
 
-`python compare_to_paper.py` pairs `*_original_results` with `*_new_results`. The report is `results/summary.md`. Regression and Bayesian optimization also get a table and a figure in their `*_results_comparison` folder.
+`python compare_to_paper.py` pairs `*_original_results` with `*_new_results`. The report is `results/summary.md`. Each suite also gets a table and a figure in its `*_results_comparison` folder.
+
+Classification compares accuracy, ECE, and training negative log likelihood. Solid lines in `classification_results_comparison/comparison.png` are the archive. Dashed lines are the new run. The 1D curves are compared pointwise in `classification_results_comparison/onedim_comparison.csv`. That file is written when both runs have `onedim/onedim_example.csv`.

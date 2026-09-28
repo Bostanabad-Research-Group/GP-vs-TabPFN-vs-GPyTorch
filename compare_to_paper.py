@@ -20,11 +20,32 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "experiments_regression" / "experimental_utils"))
 sys.path.insert(0, str(ROOT / "experiments_regression"))
 sys.path.insert(0, str(ROOT / "experiments_BO"))
+sys.path.insert(0, str(ROOT / "experiments_classification" / "benchmarks"))
 
 import IDETC_create_tables as tables  # noqa: E402
 from plot_BO import collect_runs  # noqa: E402
 from plot_BO_IDETC import IDETC_PROBLEMS, MAXIMIZATION_PROBLEMS, NOISE_HIGH  # noqa: E402
+from plot_gpc_comparison import normalize_summary  # noqa: E402
 from result_paths import RESULTS, comparison_dir, new_results, original_results  # noqa: E402
+
+CLS_DATASETS = (
+    ("electrical_grid", "Electrical Grid"),
+    ("truss_6d", "Truss 6D"),
+    ("stellar", "Stellar"),
+    ("steel_plates", "Steel Plates"),
+)
+CLS_METRICS = (
+    ("accuracy_mean", "Accuracy"),
+    ("ece_mean", "ECE"),
+    ("final_train_nll_mean", "Train NLL"),
+)
+CLS_SERIES = (
+    ("GP+", "gaussian", "GP+ RBF", "#1f77b4"),
+    ("GP+", "powerexp", "GP+ PE", "#2ca02c"),
+    ("GP+", "matern_0.5", "GP+ Matérn", "#ff7f0e"),
+    ("TabPFN v2.0", "", "TabPFN v2.0", "#d62728"),
+    ("TabPFN v2.5", "", "TabPFN v2.5", "#9467bd"),
+)
 
 REG_MODELS = {
     "gpplus": "10_runs_logging_full_Gaussian",
@@ -116,6 +137,70 @@ def _bo() -> pd.DataFrame:
                 ) else "minimize",
             }
         )
+    return pd.DataFrame(rows)
+
+
+def _classification_table(root: Path) -> pd.DataFrame:
+    frames = []
+    for name, _title in CLS_DATASETS:
+        nested = root / name / f"{name}_summary.csv"
+        flat = sorted(root.glob(f"{name}_summary*.csv"))
+        path = nested if nested.is_file() else (flat[0] if flat else None)
+        if path is None:
+            continue
+        frame = normalize_summary(pd.read_csv(path))
+        frame["dataset"] = name
+        frame["kernel"] = frame["kernel"].fillna("").astype(str)
+        frame["train_size"] = frame["train_size"].astype(int)
+        frames.append(frame)
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
+
+
+def _classification() -> pd.DataFrame:
+    paper = _classification_table(original_results("classification"))
+    new = _classification_table(new_results("classification"))
+    if paper.empty and new.empty:
+        return pd.DataFrame()
+    keys = ["dataset", "model", "kernel", "train_size"]
+    if paper.empty:
+        merged = new
+        for column, _label in CLS_METRICS:
+            merged[f"paper_{column}"] = np.nan
+            merged[f"new_{column}"] = merged[column]
+    elif new.empty:
+        merged = paper
+        for column, _label in CLS_METRICS:
+            merged[f"paper_{column}"] = merged[column]
+            merged[f"new_{column}"] = np.nan
+    else:
+        merged = paper.merge(new, on=keys, how="outer", suffixes=("_paper", "_new"))
+        for column, _label in CLS_METRICS:
+            merged[f"paper_{column}"] = merged[f"{column}_paper"]
+            merged[f"new_{column}"] = merged[f"{column}_new"]
+    rows = []
+    for _, row in merged.iterrows():
+        for column, label in CLS_METRICS:
+            paper_mean = row.get(f"paper_{column}")
+            new_mean = row.get(f"new_{column}")
+            paper_mean = None if pd.isna(paper_mean) else float(paper_mean)
+            new_mean = None if pd.isna(new_mean) else float(new_mean)
+            rows.append(
+                {
+                    "dataset": row["dataset"],
+                    "model": row["model"],
+                    "kernel": "" if pd.isna(row["kernel"]) else str(row["kernel"]),
+                    "train_size": int(row["train_size"]),
+                    "metric": label,
+                    "paper_mean": paper_mean,
+                    "new_mean": new_mean,
+                    "abs_diff": None if paper_mean is None or new_mean is None else abs(new_mean - paper_mean),
+                    "rel_diff": None
+                    if paper_mean is None or new_mean is None or abs(paper_mean) < 1e-12
+                    else abs(new_mean - paper_mean) / abs(paper_mean),
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -233,6 +318,125 @@ def _plot_bo(frame: pd.DataFrame, path: Path) -> None:
     print(f"Saved {path}")
 
 
+def _plot_classification(frame: pd.DataFrame, path: Path) -> None:
+    from matplotlib.lines import Line2D
+
+    titles = dict(CLS_DATASETS)
+    fig, axes = plt.subplots(len(CLS_METRICS), len(CLS_DATASETS), figsize=(14, 8.4), squeeze=False)
+    for row, (column, metric) in enumerate(CLS_METRICS):
+        part = frame[frame["metric"] == metric]
+        for col, (dataset, title) in enumerate(CLS_DATASETS):
+            ax = axes[row, col]
+            panel = part[part["dataset"] == dataset]
+            for model, kernel, _name, color in CLS_SERIES:
+                series = panel[(panel["model"] == model) & (panel["kernel"] == kernel)].sort_values("train_size")
+                if series.empty:
+                    continue
+                ax.plot(
+                    series["train_size"],
+                    series["paper_mean"],
+                    color=color,
+                    linestyle="-",
+                    marker="o",
+                    markersize=4,
+                    linewidth=1.4,
+                )
+                ax.plot(
+                    series["train_size"],
+                    series["new_mean"],
+                    color=color,
+                    linestyle="--",
+                    marker="s",
+                    markersize=4,
+                    linewidth=1.4,
+                )
+            if row == 0:
+                ax.set_title(title, fontsize=11)
+            if row == len(CLS_METRICS) - 1:
+                ax.set_xlabel("N")
+            if col == 0:
+                ax.set_ylabel(metric)
+            ax.grid(True, linestyle=":", linewidth=0.4, alpha=0.6)
+    handles = [
+        Line2D([0], [0], color=color, linewidth=2, label=name)
+        for _model, _kernel, name, color in CLS_SERIES
+    ]
+    handles.append(Line2D([0], [0], color="0.2", linestyle="-", marker="o", label="Archived"))
+    handles.append(Line2D([0], [0], color="0.2", linestyle="--", marker="s", label="This run"))
+    fig.legend(handles=handles, loc="lower center", ncol=7, frameon=False, bbox_to_anchor=(0.5, -0.02))
+    fig.suptitle("Classification means, archived result and this run")
+    fig.tight_layout()
+    fig.savefig(path, dpi=150, bbox_inches="tight", facecolor="white")
+    fig.savefig(path.with_suffix(".pdf"), bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print(f"Saved {path}")
+
+
+def _classification_size_notes(frame: pd.DataFrame) -> list[str]:
+    notes = []
+    accuracy = frame[frame["metric"] == "Accuracy"]
+    for dataset, title in CLS_DATASETS:
+        part = accuracy[accuracy["dataset"] == dataset]
+        if part.empty:
+            continue
+        archive_only = sorted(
+            int(v) for v in part.loc[part["new_mean"].isna() & part["paper_mean"].notna(), "train_size"].unique()
+        )
+        new_only = sorted(
+            int(v) for v in part.loc[part["paper_mean"].isna() & part["new_mean"].notna(), "train_size"].unique()
+        )
+        if archive_only:
+            notes.append(f"- {title}: archive only at N={', '.join(str(v) for v in archive_only)}")
+        if new_only:
+            notes.append(f"- {title}: this run only at N={', '.join(str(v) for v in new_only)}")
+    return notes
+
+
+def _onedim_csv(root: Path) -> Path | None:
+    for path in (root / "onedim" / "onedim_example.csv", root / "onedim_example.csv"):
+        if path.is_file():
+            return path
+    return None
+
+
+def _onedim() -> pd.DataFrame:
+    paper_path = _onedim_csv(original_results("classification"))
+    new_path = _onedim_csv(new_results("classification"))
+    if paper_path is None or new_path is None:
+        return pd.DataFrame()
+
+    def _prep(path: Path) -> pd.DataFrame:
+        frame = pd.read_csv(path)
+        frame["alpha_epsilon"] = frame["alpha_epsilon"].fillna("").astype(str)
+        frame["x"] = frame["x"].astype(float).round(10)
+        return frame
+
+    paper = _prep(paper_path)
+    new = _prep(new_path)
+    keys = ["model", "alpha_epsilon", "x"]
+    merged = paper.merge(new, on=keys, how="outer", suffixes=("_paper", "_new"))
+    merged["abs_diff"] = (merged["prob_class_1_new"] - merged["prob_class_1_paper"]).abs()
+    return merged
+
+
+def _onedim_notes(frame: pd.DataFrame) -> list[str]:
+    paper_path = _onedim_csv(original_results("classification"))
+    new_path = _onedim_csv(new_results("classification"))
+    if paper_path is None and new_path is None:
+        return ["1D classification curves: neither run has `onedim_example.csv` yet."]
+    if paper_path is None or new_path is None:
+        side = "the new run" if new_path is not None else "the archive"
+        return [f"1D classification curves: `onedim_example.csv` is only in {side}, so there is nothing to compare."]
+    if frame.empty:
+        return ["1D classification curves: both CSV files were empty."]
+    matched = frame.dropna(subset=["prob_class_1_paper", "prob_class_1_new"])
+    lines = [
+        f"1D classification curve points with both runs: {len(matched)} of {len(frame)}.",
+        f"Largest absolute difference in P(y=1): {matched['abs_diff'].max():.4g}.",
+    ]
+    return lines
+
+
 def _has_metrics_json(folder: Path) -> bool:
     if not folder.is_dir():
         return False
@@ -312,13 +516,17 @@ def _failure_rows() -> list[dict]:
 def main() -> None:
     reg_out = comparison_dir("regression")
     bo_out = comparison_dir("bo")
-    comparison_dir("classification").mkdir(parents=True, exist_ok=True)
+    cls_out = comparison_dir("classification")
     reg_out.mkdir(parents=True, exist_ok=True)
     bo_out.mkdir(parents=True, exist_ok=True)
+    cls_out.mkdir(parents=True, exist_ok=True)
     reg = _regression()
     bo = _bo()
+    cls = _classification()
     reg.to_csv(reg_out / "comparison.csv", index=False)
     bo.to_csv(bo_out / "comparison.csv", index=False)
+    if not cls.empty:
+        cls.to_csv(cls_out / "comparison.csv", index=False)
     _md(
         reg.sort_values(["problem", "Dx", "N_over_Dx", "noise", "model", "metric"]),
         reg_out / "comparison.md",
@@ -329,23 +537,49 @@ def main() -> None:
         bo_out / "comparison.md",
         ["problem", "model", "goal", "paper_median", "new_median", "rel_diff"],
     )
+    cls_cols = ["dataset", "model", "kernel", "train_size", "metric", "paper_mean", "new_mean", "abs_diff", "rel_diff"]
+    if cls.empty:
+        _md(cls, cls_out / "comparison.md", cls_cols)
+    else:
+        _md(
+            cls.sort_values(["dataset", "train_size", "model", "kernel", "metric"]),
+            cls_out / "comparison.md",
+            cls_cols,
+        )
     if not reg.empty:
         _plot_regression(reg, reg_out / "comparison.png")
     if not bo.empty:
         _plot_bo(bo, bo_out / "comparison.png")
+    if not cls.empty and cls["paper_mean"].notna().any() and cls["new_mean"].notna().any():
+        _plot_classification(cls, cls_out / "comparison.png")
+    onedim = _onedim()
+    if not onedim.empty:
+        keep = [
+            "model",
+            "alpha_epsilon",
+            "x",
+            "prob_class_1_paper",
+            "prob_class_1_new",
+            "abs_diff",
+            "lower_class_1_paper",
+            "upper_class_1_paper",
+            "lower_class_1_new",
+            "upper_class_1_new",
+        ]
+        onedim[keep].to_csv(cls_out / "onedim_comparison.csv", index=False)
     matched = reg.dropna(subset=["new_median", "rel_diff"])
     far = matched[matched["rel_diff"] > 0.1]
     failures = _failure_rows()
     lines = [
         "# Results",
         "",
-        "Each suite has the archived paper run, this run, and a comparison of the two.",
+        "Each suite has an archived run, this run, and a comparison of the two. Regression and Bayesian optimization archives are the paper runs. The classification archive is the saved baseline rerun.",
         "",
         "- `regression_results/regression_original_results`, `regression_new_results`, `regression_results_comparison`",
         "- `bo_results/bo_original_results`, `bo_new_results`, `bo_results_comparison`",
         "- `classification_results/classification_original_results`, `classification_new_results`, `classification_results_comparison`",
         "",
-        "# Comparison with archived paper results",
+        "# Comparison with the archived runs",
         "",
         f"Regression rows with a new run: {len(matched)} of {len(reg)}.",
         f"Regression rows whose median moved by more than 10%: {len(far)}.",
@@ -358,13 +592,27 @@ def main() -> None:
         lines.extend(gaps)
     else:
         lines.append("None. The 1D examples and the log-scale study both have a new run.")
+    cls_matched = cls.dropna(subset=["paper_mean", "new_mean"]) if not cls.empty else cls
+    acc = cls_matched[cls_matched["metric"] == "Accuracy"] if not cls_matched.empty else cls_matched
+    acc_far = acc[acc["abs_diff"] > 0.02] if not acc.empty else acc
     lines.extend(
         [
             "",
-            "Classification has no archived CSVs, so there is nothing to compare until a paper archive is added.",
+            f"Classification metric rows with both runs: {len(cls_matched)} of {len(cls)}.",
+            f"Classification accuracy rows that moved by more than 0.02: {len(acc_far)} of {len(acc)}.",
+            "",
+            "Training sizes that do not appear in both classification runs:",
             "",
         ]
     )
+    size_notes = _classification_size_notes(cls) if not cls.empty else []
+    if size_notes:
+        lines.extend(size_notes)
+    else:
+        lines.append("None. Every archived training size has a matching new run.")
+    lines.append("")
+    lines.extend(_onedim_notes(onedim))
+    lines.append("")
     if failures:
         lines.append(f"Experiments that failed or timed out: {len(failures)}.")
         lines.append("")
@@ -379,6 +627,7 @@ def main() -> None:
             "",
             "Regression comparison: `regression_results/regression_results_comparison/`.",
             "Bayesian optimization comparison: `bo_results/bo_results_comparison/`.",
+            "Classification comparison: `classification_results/classification_results_comparison/`.",
         ]
     )
     (RESULTS / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
