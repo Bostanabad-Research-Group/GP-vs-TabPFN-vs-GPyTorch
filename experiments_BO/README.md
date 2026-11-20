@@ -27,7 +27,7 @@ Buckling and Borehole are maximization problems. The figure plots the negative o
 
 Problems, in figure order: Buckling (\(D_x=4\)), Borehole (8), Wing weight (10), Ackley 20, Griewank 20, Zakharov 20, Ackley 40, Dixon-Price 40.
 
-The archive contains the noise 0.08 runs shown in the paper. The runner can also use noise 0.002. The paper reports that the low-noise curves look similar and does not include that figure.
+The archive and a plain `--rerun` use noise 0.08. Ackley 20D and Ackley 40D share `B4_ackley`. Each saved file name includes its dimension, so a finished 20D file does not count as the 40D run.
 
 ## Run
 

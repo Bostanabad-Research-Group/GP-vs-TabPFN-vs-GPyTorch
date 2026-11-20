@@ -32,7 +32,7 @@ def _parse() -> argparse.Namespace:
     parser.add_argument("--source", choices=("paper", "results"), default="paper")
     parser.add_argument("--problems", nargs="*", default=None)
     parser.add_argument("--models", nargs="*", default=["gp", "pfn25", "pfn20"])
-    parser.add_argument("--noise", nargs="*", type=float, default=[0.002, 0.08])
+    parser.add_argument("--noise", nargs="*", type=float, default=[0.08])
     parser.add_argument("--num-runs", type=int, default=10)
     parser.add_argument("--sections", nargs="*", default=None, help="Ignored. Accepted so the root runner can forward it.")
     parser.add_argument("--train-sizes", nargs="*", type=int, default=None, help="Ignored.")
